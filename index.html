@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- SEO Meta Tags -->
+  <title>Evergreen Medicine | Your Trusted Online Pharmacy</title>
+  <meta name="description" content="Evergreen Medicine is your trusted online pharmacy for genuine medicines, vitamins, and healthcare products. Get fast, secure delivery to your doorstep." />
+  <meta name="keywords" content="online pharmacy, medicine, healthcare, vitamins, supplements, prescription, health products, evergreen medicine" />
+  <meta name="author" content="Evergreen Medicine" />
+  <link rel="canonical" href="https://www.evergreen-medicine.com" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.evergreen-medicine.com" />
+  <meta property="og:title" content="Evergreen Medicine | Your Trusted Online Pharmacy" />
+  <meta property="og:description" content="Shop for genuine medicines, vitamins, and healthcare products with fast, secure delivery. Your health is our priority." />
+  <meta property="og:image" content="https://www.evergreen-medicine.com/og-image.jpg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://www.evergreen-medicine.com" />
+  <meta property="twitter:title" content="Evergreen Medicine | Your Trusted Online Pharmacy" />
+  <meta property="twitter:description" content="Shop for genuine medicines, vitamins, and healthcare products with fast, secure delivery. Your health is our priority." />
+  <meta property="twitter:image" content="https://www.evergreen-medicine.com/og-image.jpg" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700;900&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- AOS (Animate on Scroll) -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <!-- Framer Motion -->
+  <script src="https://cdn.jsdelivr.net/npm/framer-motion@10.16.4/dist/framer-motion.umd.min.js"></script>
+
+  <!-- Quill Rich Text Editor -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+  
+  <style>
+    /* Custom Scrollbar for Webkit browsers (Chrome, Safari) */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f8fafc; /* slate-50 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, #2bb6a6, #2f80ed); /* primary-gradient */
+      border-radius: 6px;
+      border: 3px solid #f8fafc; /* slate-50 */
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to bottom, #249d8f, #2873d4);
+    }
+
+    /* Custom Scrollbar for Firefox */
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #2bb6a6 #f8fafc;
+    }
+    
+    /* Quill Editor custom height */
+    .ql-editor {
+      min-height: 200px;
+    }
+  </style>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Merriweather', 'serif'],
+            poppins: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            primaryStart: '#2bb6a6',
+            primaryEnd: '#2f80ed',
+            coral: '#FF7A7A',
+            amber: {
+              300: '#fcd34d',
+              500: '#f59e0b',
+            },
+            slate: {
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#334155',
+              600: '#475569',
+              500: '#64748b',
+              400: '#94a3b8',
+              300: '#cbd5e1',
+              200: '#e2e8f0',
+              100: '#f1f5f9',
+              50: '#f8fafc',
+            }
+          },
+          boxShadow: {
+            'soft-md': '0 6px 18px rgba(16,24,40,0.06), 0 1px 2px rgba(16,24,40,0.04)',
+            'soft-lg': '0 12px 40px rgba(16,24,40,0.08), 0 2px 4px rgba(16,24,40,0.05)',
+            'gradient-glow': '0 0 20px -5px #2f80ed66, 0 0 10px -7px #2bb6a699',
+          },
+          borderRadius: { 
+            '2xl': '1rem' 
+          },
+          backgroundImage: {
+            'primary-gradient': 'linear-gradient(to right, #2bb6a6, #2f80ed)',
+            'secondary-gradient': 'linear-gradient(to right, #fcd34d, #f59e0b)',
+          },
+          typography: ({ theme }) => ({
+            DEFAULT: {
+              css: {
+                '--tw-prose-body': theme('colors.slate[600]'),
+                '--tw-prose-headings': theme('colors.slate[900]'),
+                '--tw-prose-lead': theme('colors.slate[600]'),
+                '--tw-prose-links': theme('colors.primaryEnd'),
+                '--tw-prose-bold': theme('colors.slate[900]'),
+                '--tw-prose-counters': theme('colors.slate[500]'),
+                '--tw-prose-bullets': theme('colors.slate[400]'),
+                '--tw-prose-hr': theme('colors.slate[200]'),
+                '--tw-prose-quotes': theme('colors.slate[900]'),
+                '--tw-prose-quote-borders': theme('colors.slate[200]'),
+                '--tw-prose-captions': theme('colors.slate[500]'),
+                '--tw-prose-code': theme('colors.slate[900]'),
+                '--tw-prose-pre-code': theme('colors.slate[200]'),
+                '--tw-prose-pre-bg': theme('colors.slate[800]'),
+                '--tw-prose-th-borders': theme('colors.slate[300]'),
+                '--tw-prose-td-borders': theme('colors.slate[200]'),
+              },
+            },
+          }),
+        }
+      }
+    }
+  </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18",
+    "react-dom": "https://esm.sh/react-dom@18",
+    "react-dom/client": "https://esm.sh/react-dom@18/client",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3",
+    "aos": "https://esm.sh/aos@2.3.4",
+    "react-hot-toast": "https://esm.sh/react-hot-toast@2.4.1",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@3.8.2",
+    "react-quill": "https://esm.sh/react-quill@2.0.0",
+    "@google/genai": "https://esm.sh/@google/genai@latest",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-800">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
