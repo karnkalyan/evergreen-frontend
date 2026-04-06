@@ -15,7 +15,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.552.0",
-    "quill": "^2.0.2",
+    "quill": "2.0.2",
     "react": "^18",
     "react-dom": "^18",
     "react-helmet-async": "^3.0.0",
@@ -34,13 +34,13 @@
   },
   "overrides": {
     "react-quill": {
-      "quill": "^2.0.2"
+      "quill": "2.0.2"
     },
     "react-quill-new": {
-      "quill": "^2.0.2"
+      "quill": "2.0.2"
     },
-    "quill": "^2.0.2",
-    "lodash": "^4.17.21",
-    "lodash-es": "^4.17.21"
+    "quill": "2.0.2",
+    "lodash": "4.17.21",
+    "lodash-es": "4.17.21"
   }
 }
