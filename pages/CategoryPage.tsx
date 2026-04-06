@@ -237,7 +237,7 @@ const CategoryPage: React.FC = () => {
         console.log('🔄 Starting to fetch data for CategoryPage...');
         
         const [productsData, categoriesData, brandsData] = await Promise.all([
-          publicProductService.getProducts(),
+          publicProductService.getProducts(country),
           publicCategoryService.getCategories(),
           publicBrandService.getBrands()
         ]);

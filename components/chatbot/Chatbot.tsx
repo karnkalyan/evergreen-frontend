@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { GoogleGenAI, GenerateContentResponse, FunctionDeclaration, Type, Part } from '@google/genai';
+import { useApp } from '../../hooks/useApp';
 import ChatWindow from './ChatWindow';
 import { ICONS } from '../../constants';
 import { ChatbotMessage } from '../../types';
@@ -14,6 +15,7 @@ const Chatbot: React.FC = () => {
     const [messages, setMessages] = useState<ChatbotMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [userDetails, setUserDetails] = useState<any>(null);
+    const { country } = useApp();
     const { user: authUser, isAuthenticated } = useContext(AuthContext);
     const hasGreeted = useRef(false);
 
@@ -199,7 +201,7 @@ const Chatbot: React.FC = () => {
     }>;
 } | { error: string }> => {
     try {
-        const products = await publicProductService.searchProducts(productName, {});
+        const products = await publicProductService.searchProducts(productName, { country });
         
         if (products.length === 0) {
             return { error: `Product '${productName}' is not available in our inventory.` };
@@ -470,14 +472,14 @@ const Chatbot: React.FC = () => {
         if (products.length === 0) {
             const searchTerms = getSearchTerms(query);
             for (const term of searchTerms) {
-                products = await publicProductService.searchProducts(term, {});
+                products = await publicProductService.searchProducts(term, { country });
                 if (products.length > 0) break;
             }
         }
 
         // If still no results, try searching by category or symptoms
         if (products.length === 0) {
-            products = await publicProductService.searchProducts('', { limit: 50 }); // Get all products
+            products = await publicProductService.searchProducts('', { limit: 50, country }); // Get all products
             products = products.filter(product => 
                 matchesMedicalCondition(product, query) ||
                 matchesCategory(product, query) ||
@@ -664,7 +666,7 @@ const getProductDetails = async (productName: string): Promise<{
     }>;
 } | { error: string }> => {
     try {
-        const products = await publicProductService.searchProducts(productName, {});
+        const products = await publicProductService.searchProducts(productName, { country });
         
         if (products.length === 0) {
             return { error: `Product '${productName}' is not available in our store.` };

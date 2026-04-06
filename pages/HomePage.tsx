@@ -225,7 +225,7 @@ const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boole
 
 const HomePage: React.FC = () => {
     const isMobile = useMediaQuery('(max-width: 767px)');
-    const { homepageSections } = useApp();
+    const { homepageSections, country } = useApp();
     
     const [homeData, setHomeData] = useState<HomePageData>({
         products: [],
@@ -249,9 +249,9 @@ const HomePage: React.FC = () => {
                 setHomeData(prev => ({ ...prev, loading: true }));
                 
                 const [products, featuredProducts, trendingProducts, categories, brands] = await Promise.all([
-                    publicProductService.getProducts(),
-                    publicProductService.getFeaturedProducts(),
-                    publicProductService.getTrendingProducts(),
+                    publicProductService.getProducts(country),
+                    publicProductService.getFeaturedProducts(country),
+                    publicProductService.getTrendingProducts(country),
                     publicCategoryService.getCategories(),
                     publicBrandService.getBrands()
                 ]);

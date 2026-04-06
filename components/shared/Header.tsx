@@ -389,7 +389,7 @@ const Header: React.FC = () => {
                 console.log('🔍 Searching for:', searchQuery);
                 
                 // Use the searchProducts method from productService
-                const searchResults = await publicProductService.searchProducts(searchQuery.trim());
+                const searchResults = await publicProductService.searchProducts(searchQuery.trim(), { country });
                 console.log('📦 Search results:', searchResults);
                 
                 // Filter by country

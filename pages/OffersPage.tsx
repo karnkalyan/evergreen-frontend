@@ -4,10 +4,12 @@ import ProductCard from '../components/products/ProductCard';
 import Pagination from '../components/shared/Pagination';
 import { Product } from '../types';
 import Button from '../components/shared/Button';
+import { useApp } from '../hooks/useApp';
 
 const ITEMS_PER_PAGE = 16;
 
 const OffersPage: React.FC = () => {
+  const { country } = useApp();
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +23,7 @@ const OffersPage: React.FC = () => {
         setError(null);
         console.log('🔄 Fetching products for offers page...');
         
-        const productsData = await publicProductService.getProducts();
+        const productsData = await publicProductService.getProducts(country);
         console.log('📦 Products fetched:', productsData);
         
         setProducts(productsData);

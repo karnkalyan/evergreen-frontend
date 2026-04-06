@@ -63,11 +63,11 @@ export const productService = {
   // FIXED: Use admin route instead of public route
   getProducts: async (): Promise<Product[]> => {
     try {
-      console.log('🔄 Fetching products from ADMIN API...');
+      console.log('ðŸ”„ Fetching products from ADMIN API...');
       
       // Use apiRequest (authenticated) instead of publicApiRequest
       const response = await apiRequest('/products');
-      console.log('📦 Admin products API response:', response);
+      console.log('ðŸ“¦ Admin products API response:', response);
       
       let products: any[] = [];
       
@@ -85,81 +85,38 @@ export const productService = {
       } else if (response && Array.isArray(response.data)) {
         products = response.data;
       } else {
-        console.warn('❌ Unexpected admin products response structure:', response);
+        console.warn('âŒ Unexpected admin products response structure:', response);
         return [];
       }
       
       // Process image URLs for all products
       const processedProducts = products.map(processProductImages);
-      console.log('✅ Processed admin products:', processedProducts.length);
+      console.log('âœ… Processed admin products:', processedProducts.length);
       return processedProducts;
     } catch (error) {
-      console.error('❌ Error fetching admin products:', error);
+      console.error('âŒ Error fetching admin products:', error);
       handleApiError(error, 'Failed to fetch products');
       return [];
     }
   },
-
-  // NEW: Get products with pagination support
-  getProductsPaginated: async (page: number = 1, limit: number = 10, search?: string): Promise<any> => {
-    try {
-      console.log(`🔄 Fetching paginated products from ADMIN API: page=${page}, limit=${limit}`);
-      
-      // Build query string
-      const params = new URLSearchParams();
-      params.append('page', page.toString());
-      params.append('limit', limit.toString());
-      if (search) params.append('search', search);
-      
-      const response = await apiRequest(`/products?${params.toString()}`);
-      console.log('📦 Admin paginated products API response:', response);
-      
-      // Handle the admin API response structure: { success: true, data: { products: [...], pagination: {...} } }
-      if (response && response.success && response.data) {
-        const { products = [], pagination = {} } = response.data;
-        
-        // Process image URLs for all products
-        const processedProducts = products.map(processProductImages);
-        
-        return {
-          products: processedProducts,
-          pagination: {
-            page: pagination.page || page,
-            limit: pagination.limit || limit,
-            totalCount: pagination.totalCount || 0,
-            totalPages: pagination.totalPages || 0,
-            hasNextPage: pagination.hasNextPage || false,
-            hasPrevPage: pagination.hasPrevPage || false,
-          }
-        };
-      } else {
-        console.warn('❌ Unexpected paginated products response structure:', response);
-        return { products: [], pagination: { page, limit, totalCount: 0, totalPages: 0 } };
-      }
-    } catch (error) {
-      console.error('❌ Error fetching paginated admin products:', error);
-      handleApiError(error, 'Failed to fetch products');
-      return { products: [], pagination: { page: 1, limit: 10, totalCount: 0, totalPages: 0 } };
-    }
-  },
 getProductBySlug: async (slug: string): Promise<Product | null> => {
     try {
-      console.log(`🔄 Fetching product by slug from ADMIN API: ${slug}`);
+      console.log(`ðŸ”„ Fetching product by slug from ADMIN API: ${slug}`);
       
       // Use admin route without country parameter
       const productData = await apiRequest(`/products/slug/${slug}`);
-      console.log('📦 Admin product data received:', productData);
+      console.log('ðŸ“¦ Admin product data received:', productData);
       
       if (!productData) {
-        console.warn('❌ No product data found for slug:', slug);
+        console.warn('âŒ No product data found for slug:', slug);
         return null;
       }
       
       const processedProduct = processProductImages(productData);
-      console.log('✅ Processed admin product:', processedProduct);
+      console.log('âœ… Processed admin product:', processedProduct);
       return processedProduct;
     } catch (error) {
-      console.error('❌ Error fetching admin product by slug:', error);
+      console.error('âŒ Error fetching admin product by slug:', error);
       handleApiError(error, 'Failed to fetch product');
       return null;
     }
@@ -167,12 +124,12 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
   // Get product by ID with processed images (admin route)
   getProductById: async (id: number): Promise<Product | null> => {
     try {
-      console.log(`🔄 Fetching product by ID from ADMIN API: ${id}`);
+      console.log(`ðŸ”„ Fetching product by ID from ADMIN API: ${id}`);
       const productData = await apiRequest(`/products/${id}`);
-      console.log('📦 Admin product by ID data:', productData);
+      console.log('ðŸ“¦ Admin product by ID data:', productData);
       return productData ? processProductImages(productData) : null;
     } catch (error) {
-      console.error('❌ Error fetching admin product by ID:', error);
+      console.error('âŒ Error fetching admin product by ID:', error);
       handleApiError(error, 'Failed to fetch product');
       return null;
     }
@@ -181,15 +138,15 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
   // Create product (admin route)
   createProduct: async (productData: FormData): Promise<any> => {
     try {
-      console.log('🔄 Creating product via ADMIN API...');
+      console.log('ðŸ”„ Creating product via ADMIN API...');
       const result = await apiRequest('/products', {
         method: 'POST',
         body: productData,
       });
-      console.log('✅ Product creation result:', result);
+      console.log('âœ… Product creation result:', result);
       return result;
     } catch (error) {
-      console.error('❌ Error creating product:', error);
+      console.error('âŒ Error creating product:', error);
       throw error;
     }
   },
@@ -197,15 +154,15 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
   // Update product (admin route)
   updateProduct: async (id: number, productData: FormData): Promise<any> => {
     try {
-      console.log(`🔄 Updating product via ADMIN API: ${id}`);
+      console.log(`ðŸ”„ Updating product via ADMIN API: ${id}`);
       const result = await apiRequest(`/products/${id}`, {
         method: 'PUT',
         body: productData,
       });
-      console.log('✅ Product update result:', result);
+      console.log('âœ… Product update result:', result);
       return result;
     } catch (error) {
-      console.error('❌ Error updating product:', error);
+      console.error('âŒ Error updating product:', error);
       throw error;
     }
   },
@@ -213,14 +170,14 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
   // Delete product (admin route)
   deleteProduct: async (id: number): Promise<any> => {
     try {
-      console.log(`🔄 Deleting product via ADMIN API: ${id}`);
+      console.log(`ðŸ”„ Deleting product via ADMIN API: ${id}`);
       const result = await apiRequest(`/products/${id}`, {
         method: 'DELETE',
       });
-      console.log('✅ Product deletion result:', result);
+      console.log('âœ… Product deletion result:', result);
       return result;
     } catch (error) {
-      console.error('❌ Error deleting product:', error);
+      console.error('âŒ Error deleting product:', error);
       throw error;
     }
   },
@@ -228,9 +185,9 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
   // Get categories (admin route)
   getCategories: async (): Promise<Category[]> => {
     try {
-      console.log('🔄 Fetching categories from ADMIN API...');
+      console.log('ðŸ”„ Fetching categories from ADMIN API...');
       const response = await apiRequest('/categories');
-      console.log('📦 Admin categories response:', response);
+      console.log('ðŸ“¦ Admin categories response:', response);
       
       if (response && response.success && response.data) {
         if (Array.isArray(response.data.categories)) {
@@ -247,11 +204,11 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
       } else if (response && Array.isArray(response.data)) {
         return response.data;
       } else {
-        console.warn('❌ Unexpected admin categories response structure:', response);
+        console.warn('âŒ Unexpected admin categories response structure:', response);
         return [];
       }
     } catch (error) {
-      console.error('❌ Error fetching admin categories:', error);
+      console.error('âŒ Error fetching admin categories:', error);
       handleApiError(error, 'Failed to fetch categories');
       return [];
     }
@@ -260,9 +217,9 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
   // Get brands (admin route)
   getBrands: async (): Promise<Brand[]> => {
     try {
-      console.log('🔄 Fetching brands from ADMIN API...');
+      console.log('ðŸ”„ Fetching brands from ADMIN API...');
       const response = await apiRequest('/brands');
-      console.log('📦 Admin brands response:', response);
+      console.log('ðŸ“¦ Admin brands response:', response);
       
       // Handle the admin API response structure: { success: true, data: { brands: [...] } }
       if (response && response.success && response.data) {
@@ -281,11 +238,11 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
       } else if (response && Array.isArray(response.data)) {
         return response.data;
       } else {
-        console.warn('❌ Unexpected admin brands response structure:', response);
+        console.warn('âŒ Unexpected admin brands response structure:', response);
         return [];
       }
     } catch (error) {
-      console.error('❌ Error fetching admin brands:', error);
+      console.error('âŒ Error fetching admin brands:', error);
       handleApiError(error, 'Failed to fetch brands');
       return [];
     }
