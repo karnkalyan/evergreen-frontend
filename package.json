@@ -34,8 +34,12 @@
   },
   "overrides": {
     "react-quill": {
-      "quill": "^2.0.3"
+      "quill": "^2.0.2"
     },
+    "react-quill-new": {
+      "quill": "^2.0.2"
+    },
+    "quill": "^2.0.2",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21"
   }
