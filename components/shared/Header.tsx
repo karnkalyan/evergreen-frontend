@@ -72,7 +72,6 @@ const CountrySelector: React.FC = () => {
                         countries.unshift(currentCountry);
                     }
                 }
-
                 setAvailableCountries(countries);
             } catch (error) {
                 console.error('❌ Error loading available countries:', error);

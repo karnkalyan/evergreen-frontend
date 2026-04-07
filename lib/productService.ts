@@ -1,5 +1,5 @@
 import { apiRequest, publicApiRequest, handleApiError } from './api';
-import { Product, Category, Brand } from '../types';
+import { Product, Category, Brand, Country } from '../types';
 
 // Helper function to get full image URL
 export const getImageUrl = (imagePath: string): string => {
@@ -253,11 +253,20 @@ getProductBySlug: async (slug: string): Promise<Product | null> => {
   parseArrayField
 };
 
+const buildPublicProductUrl = (endpoint: string, country?: Country | string) => {
+  const code = typeof country === 'string' ? country : country?.code;
+  if (code && code !== 'Global') {
+    const separator = endpoint.includes('?') ? '&' : '?';
+    return `${endpoint}${separator}country=${encodeURIComponent(code)}`;
+  }
+  return endpoint;
+};
+
 export const publicProductService = {
-  getProducts: async (): Promise<Product[]> => {
+  getProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      console.log('Fetching products from public API...');
-      const response = await publicApiRequest('/products/public/products');
+      console.log('Fetching products from public API...', country);
+      const response = await publicApiRequest(buildPublicProductUrl('/products/public/products', country));
       console.log('Products API response:', response);
       
       let products: any[] = [];
@@ -283,10 +292,10 @@ export const publicProductService = {
       return [];
     }
   },
-  getFeaturedProducts: async (): Promise<Product[]> => {
+  getFeaturedProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      console.log('Fetching featured products from public API...');
-      const response = await publicApiRequest('/products/public/products/featured');
+      console.log('Fetching featured products from public API...', country);
+      const response = await publicApiRequest(buildPublicProductUrl('/products/public/products/featured', country));
       console.log('Featured products API response:', response);
       
       let products: any[] = [];
@@ -309,10 +318,10 @@ export const publicProductService = {
       return [];
     }
   },
-  getTrendingProducts: async (): Promise<Product[]> => {
+  getTrendingProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      console.log('Fetching trending products from public API...');
-      const response = await publicApiRequest('/products/public/products/trending');
+      console.log('Fetching trending products from public API...', country);
+      const response = await publicApiRequest(buildPublicProductUrl('/products/public/products/trending', country));
       console.log('Trending products API response:', response);
       
       let products: any[] = [];
