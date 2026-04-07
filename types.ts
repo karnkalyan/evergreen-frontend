@@ -333,10 +333,11 @@ export interface Customer {
 }
 
 export interface CartItem {
+  id?: number; // Server-side cart item ID
   product: Product;
   quantity: number;
   variantDetail: {
-    id?: number; // Add this - the variant option ID
+    id?: number; // The variant option ID
     country: string;
     shipping: string;
     currency: string;

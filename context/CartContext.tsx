@@ -264,13 +264,49 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const removeFromCart = async (productId: number, variantDetail: CartItem['variantDetail']) => {
-    setCartItems(prevItems => {
-      const newItems = prevItems.filter(item => 
-        !(item.product.id === productId && item.variantDetail.label === variantDetail.label && item.variantDetail.shipping === variantDetail.shipping)
+    try {
+      const itemToRemove = cartItems.find(item => 
+        item.product.id === productId && 
+        item.variantDetail.label === variantDetail.label && 
+        item.variantDetail.shipping === variantDetail.shipping
       );
-      saveCart(newItems);
-      return newItems;
-    });
+
+      // Remove from server via API for authenticated users
+      if (authContext && isAuthenticated && currentUser && itemToRemove?.id) {
+        console.log(`🗑️ Removing item from server: cart item ID ${itemToRemove.id}`);
+        try {
+          await cartService.removeFromCart(currentUser.id, itemToRemove.id);
+          console.log(`✅ Item removed from server`);
+        } catch (error) {
+          console.error('❌ Error removing item from server:', error);
+          // Continue with local removal even if server fails
+        }
+      }
+
+      // Remove from local state
+      setCartItems(prevItems => {
+        const newItems = prevItems.filter(item => 
+          !(item.product.id === productId && item.variantDetail.label === variantDetail.label && item.variantDetail.shipping === variantDetail.shipping)
+        );
+        
+        // Sync updated cart to server/localStorage
+        if (authContext && isAuthenticated && currentUser) {
+          // For authenticated users, the server removal already happened via API
+          // Just update localStorage as backup
+          localStorage.removeItem('guest_cart');
+        } else {
+          // For guests, save to localStorage
+          localStorage.setItem('guest_cart', JSON.stringify(newItems));
+        }
+        
+        return newItems;
+      });
+
+      toast.success('Item removed from cart');
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+      toast.error('Failed to remove item from cart');
+    }
   };
 
   const updateQuantity = async (productId: number, variantDetail: CartItem['variantDetail'], quantity: number) => {

@@ -99,7 +99,65 @@ export const productService = {
       return [];
     }
   },
-getProductBySlug: async (slug: string): Promise<Product | null> => {
+
+  getProductsPaginated: async (page: number = 1, limit: number = 10, search?: string): Promise<any> => {
+    try {
+      console.log(`ðŸ”„ Fetching paginated admin products: page=${page}, limit=${limit}, search=${search}`);
+      const params = new URLSearchParams();
+      params.append('page', String(page));
+      params.append('limit', String(limit));
+      if (search) params.append('search', search);
+
+      const response = await apiRequest(`/products?${params.toString()}`);
+      console.log('ðŸ“¦ Paginated products response:', response);
+
+      let products: any[] = [];
+      let pagination: any = {
+        page,
+        limit,
+        totalCount: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        nextPage: null,
+        prevPage: null
+      };
+
+      if (response && response.success && response.data) {
+        products = Array.isArray(response.data.products) ? response.data.products : [];
+        pagination = response.data.pagination || pagination;
+      } else if (response && Array.isArray(response.products)) {
+        products = response.products;
+      } else if (Array.isArray(response)) {
+        products = response;
+      } else if (response && Array.isArray(response.data)) {
+        products = response.data;
+      }
+
+      return {
+        products: products.map(processProductImages),
+        pagination
+      };
+    } catch (error) {
+      console.error('âŒ Error fetching paginated admin products:', error);
+      handleApiError(error, 'Failed to fetch products');
+      return {
+        products: [],
+        pagination: {
+          page,
+          limit,
+          totalCount: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+          nextPage: null,
+          prevPage: null
+        }
+      };
+    }
+  },
+
+  getProductBySlug: async (slug: string): Promise<Product | null> => {
     try {
       console.log(`ðŸ”„ Fetching product by slug from ADMIN API: ${slug}`);
       
