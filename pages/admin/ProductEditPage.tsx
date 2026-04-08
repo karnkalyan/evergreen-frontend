@@ -287,13 +287,16 @@ const ProductEditPage: React.FC = () => {
 
   // Handle removal of existing images
   const handleRemoveExistingImage = (imageUrl: string) => {
-    setImagesToRemove(prev => [...prev, imageUrl]);
+    setImagesToRemove(prev => {
+      // Prevent duplicate entries
+      if (prev.includes(imageUrl)) return prev;
+      return [...prev, imageUrl];
+    });
     // Also update local state for immediate UI feedback
     setProduct(prev => ({
       ...prev,
       images: prev.images?.filter(img => img.url !== imageUrl) || []
     }));
-    toast.success('Image marked for removal');
   };
 
   // Fetch initial data (categories, brands, countries, shipping options)
@@ -315,10 +318,10 @@ const ProductEditPage: React.FC = () => {
         setCountries(countriesData);
         setShippingOptions(shippingData);
         
-        console.log('Fetched categories:', categoriesData);
-        console.log('Fetched brands:', brandsData);
-        console.log('Fetched countries:', countriesData);
-        console.log('Fetched shipping options:', shippingData);
+        // console.log('Fetched categories:', categoriesData);
+        // console.log('Fetched brands:', brandsData);
+        // console.log('Fetched countries:', countriesData);
+        // console.log('Fetched shipping options:', shippingData);
       } catch (error) {
         console.error('Error fetching initial data:', error);
         setFetchError('Failed to load initial data');
@@ -393,11 +396,11 @@ const ProductEditPage: React.FC = () => {
         setSymptoms(productService.parseArrayField(productData.symptoms));
         setVariants(Array.isArray(productData.variants) ? productData.variants : []);
         
-        console.log('Product images:', productData.images);
-        console.log('Parsed strengths:', productService.parseArrayField(productData.strengths));
-        console.log('Parsed forms:', productService.parseArrayField(productData.forms));
-        console.log('Parsed tags:', productService.parseArrayField(productData.tags));
-        console.log('Parsed symptoms:', productService.parseArrayField(productData.symptoms));
+        // console.log('Product images:', productData.images);
+        // console.log('Parsed strengths:', productService.parseArrayField(productData.strengths));
+        // console.log('Parsed forms:', productService.parseArrayField(productData.forms));
+        // console.log('Parsed tags:', productService.parseArrayField(productData.tags));
+        // console.log('Parsed symptoms:', productService.parseArrayField(productData.symptoms));
       } catch (error) {
         console.error('Error fetching product:', error);
         setFetchError('Failed to load product data');

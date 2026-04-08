@@ -188,7 +188,7 @@ const Header: React.FC = () => {
         const detectUserCountry = async () => {
             try {
                 setIsDetectingCountry(true);
-                console.log('🔄 Starting enhanced country detection...');
+                // console.log('🔄 Starting enhanced country detection...');
 
                 let detectedCountryCode = 'Global';
 
@@ -196,19 +196,19 @@ const Header: React.FC = () => {
                 const geolocationCountry = await getCountryFromGeolocation();
                 if (geolocationCountry) {
                     detectedCountryCode = geolocationCountry;
-                    console.log('📍 Country detected from geolocation:', detectedCountryCode);
+                    // console.log('📍 Country detected from geolocation:', detectedCountryCode);
                 } else {
                     // Method 2: Try backend IP detection
                     try {
                         const backendCountry = await countryService.detectCountry();
-                        console.log('🌐 Backend detection result:', backendCountry);
+                        // console.log('🌐 Backend detection result:', backendCountry);
                         
                         if (backendCountry && backendCountry.code && backendCountry.code !== 'GL') {
                             detectedCountryCode = backendCountry.code;
-                            console.log('📍 Country detected from backend IP:', detectedCountryCode);
+                            // console.log('📍 Country detected from backend IP:', detectedCountryCode);
                         }
                     } catch (backendError) {
-                        console.log('⚠️ Backend detection failed, trying browser methods...');
+                        // console.log('⚠️ Backend detection failed, trying browser methods...');
                     }
 
                     // Method 3: Browser language and timezone fallback
@@ -216,7 +216,7 @@ const Header: React.FC = () => {
                         const browserCountry = getCountryFromBrowser();
                         if (browserCountry) {
                             detectedCountryCode = browserCountry;
-                            console.log('📍 Country detected from browser:', detectedCountryCode);
+                            // console.log('📍 Country detected from browser:', detectedCountryCode);
                         }
                     }
                 }
@@ -226,18 +226,18 @@ const Header: React.FC = () => {
                     try {
                         const countryDetails = await countryService.getCountryByCode(detectedCountryCode);
                         if (countryDetails && countryDetails.isActive) {
-                            console.log('✅ Setting detected country:', detectedCountryCode);
+                            // console.log('✅ Setting detected country:', detectedCountryCode);
                             setCountry(detectedCountryCode as any);
                         } else {
-                            console.log('⚠️ Detected country not active, falling back to Global');
+                            // console.log('⚠️ Detected country not active, falling back to Global');
                             setCountry('Global');
                         }
                     } catch (error) {
-                        console.log('⚠️ Detected country not found, falling back to Global');
+                        // console.log('⚠️ Detected country not found, falling back to Global');
                         setCountry('Global');
                     }
                 } else {
-                    console.log('🌍 No country detected, using Global');
+                    //  console.log('🌍 No country detected, using Global');
                     setCountry('Global');
                 }
 

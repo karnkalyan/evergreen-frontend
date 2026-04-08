@@ -243,9 +243,9 @@ export const productService = {
   // Get categories (admin route)
   getCategories: async (): Promise<Category[]> => {
     try {
-      console.log('ðŸ”„ Fetching categories from ADMIN API...');
+      // console.log('ðŸ”„ Fetching categories from ADMIN API...');
       const response = await apiRequest('/categories');
-      console.log('ðŸ“¦ Admin categories response:', response);
+      // console.log('ðŸ“¦ Admin categories response:', response);
       
       if (response && response.success && response.data) {
         if (Array.isArray(response.data.categories)) {
@@ -275,9 +275,9 @@ export const productService = {
   // Get brands (admin route)
   getBrands: async (): Promise<Brand[]> => {
     try {
-      console.log('ðŸ”„ Fetching brands from ADMIN API...');
+      // console.log('ðŸ”„ Fetching brands from ADMIN API...');
       const response = await apiRequest('/brands');
-      console.log('ðŸ“¦ Admin brands response:', response);
+      // console.log('ðŸ“¦ Admin brands response:', response);
       
       // Handle the admin API response structure: { success: true, data: { brands: [...] } }
       if (response && response.success && response.data) {
@@ -323,9 +323,9 @@ const buildPublicProductUrl = (endpoint: string, country?: Country | string) => 
 export const publicProductService = {
   getProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      console.log('Fetching products from public API...', country);
+      // console.log('Fetching products from public API...', country);
       const response = await publicApiRequest(buildPublicProductUrl('/products/public/products', country));
-      console.log('Products API response:', response);
+      // console.log('Products API response:', response);
       
       let products: any[] = [];
       if (Array.isArray(response)) {
@@ -343,7 +343,7 @@ export const publicProductService = {
       
       // Process image URLs for all products
       const processedProducts = products.map(processProductImages);
-      console.log('Processed products:', processedProducts);
+      // console.log('Processed products:', processedProducts);
       return processedProducts;
     } catch (error) {
       handleApiError(error, 'Failed to fetch products');
@@ -352,9 +352,9 @@ export const publicProductService = {
   },
   getFeaturedProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      console.log('Fetching featured products from public API...', country);
+      // console.log('Fetching featured products from public API...', country);
       const response = await publicApiRequest(buildPublicProductUrl('/products/public/products/featured', country));
-      console.log('Featured products API response:', response);
+      // console.log('Featured products API response:', response);
       
       let products: any[] = [];
       if (Array.isArray(response)) {
@@ -378,9 +378,9 @@ export const publicProductService = {
   },
   getTrendingProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      console.log('Fetching trending products from public API...', country);
+      // console.log('Fetching trending products from public API...', country);
       const response = await publicApiRequest(buildPublicProductUrl('/products/public/products/trending', country));
-      console.log('Trending products API response:', response);
+      // console.log('Trending products API response:', response);
       
       let products: any[] = [];
       if (Array.isArray(response)) {
@@ -404,9 +404,9 @@ export const publicProductService = {
   },
   getProductBySlug: async (slug: string): Promise<Product | null> => {
     try {
-      console.log(`Fetching product by slug from public API: ${slug}`);
+      // console.log(`Fetching product by slug from public API: ${slug}`);
       const productData = await publicApiRequest(`/products/public/products/slug/${slug}`);
-      console.log('Product data received:', productData);
+      // console.log('Product data received:', productData);
       
       if (!productData) {
         console.warn('No product data found for slug:', slug);
@@ -416,7 +416,7 @@ export const publicProductService = {
       // Handle different response structures
       const product = productData.data || productData.product || productData;
       const processedProduct = processProductImages(product);
-      console.log('Processed product:', processedProduct);
+      // console.log('Processed product:', processedProduct);
       return processedProduct;
     } catch (error) {
       handleApiError(error, 'Failed to fetch product');

@@ -65,16 +65,18 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         if (e.target) e.target.value = '';
     };
 
-    const removeImage = (index: number) => {
+    // Remove a newly added image (not yet saved)
+    const removeNewImage = (index: number) => {
         const newImages = images.filter((_, i) => i !== index);
         updateImages(newImages);
-        toast.success('Image removed');
+        toast.success('New image removed');
     };
 
-    const removeExistingImage = (imageUrl: string) => {
+    // Mark an existing image for removal (will be removed on save/update)
+    const markExistingImageForRemoval = (imageUrl: string) => {
         if (onRemoveExistingImage) {
             onRemoveExistingImage(imageUrl);
-            toast.success('Existing image marked for removal');
+            toast.success('Image marked for removal (will be deleted on save)');
         }
     };
 
@@ -92,7 +94,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     const newImagePreviews = images.map(file => ({
         url: URL.createObjectURL(file),
         name: file.name,
-        isNew: true
+        isNew: true,
+        isPrimary: false
     }));
 
     // Combine existing and new images for display
@@ -101,14 +104,27 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         ...newImagePreviews
     ];
 
-    const primaryImage = allImages.find(img => img.isPrimary) || allImages[0];
+    // Primary image logic:
+    // - The FIRST image in the list is ALWAYS the primary (position-based, not flag-based)
+    // - When new images are uploaded, the first new image will become primary on save
+    //   (because prepareFormData sends images[0] as primaryImage to the backend)
+    const hasNewImages = newImagePreviews.length > 0;
+    // For display: always show the first image as primary
+    const primaryImage = allImages.length > 0 ? allImages[0] : null;
 
     return (
         <div className="space-y-6">
             {/* Primary Image Display */}
             {primaryImage && (
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Primary Image</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Primary Image
+                        {hasNewImages && (
+                            <span className="ml-2 text-xs text-amber-600 font-normal">
+                                (New images added — first uploaded image will become primary on save)
+                            </span>
+                        )}
+                    </label>
                     <div className="relative inline-block">
                         <img
                             src={primaryImage.url}
@@ -118,11 +134,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                                 (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
                             }}
                         />
-                        {primaryImage.isPrimary && (
-                            <span className="absolute top-2 left-2 bg-primaryEnd text-white text-xs px-2 py-1 rounded">
-                                Primary
-                            </span>
-                        )}
+                        <span className="absolute top-2 left-2 bg-primaryEnd text-white text-xs px-2 py-1 rounded">
+                            Primary
+                        </span>
                     </div>
                 </div>
             )}
@@ -133,55 +147,71 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     All Images ({allImages.length})
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
-                    {allImages.map((image, index) => (
-                        <div 
-                            key={index} 
-                            className="relative group aspect-square"
-                            draggable={image.isNew}
-                            onDragStart={() => image.isNew && (dragItem.current = index)}
-                            onDragEnter={() => image.isNew && (dragOverItem.current = index)}
-                            onDragEnd={image.isNew ? handleDragSort : undefined}
-                            onDragOver={(e) => e.preventDefault()}
-                        >
-                            <img
-                                src={image.url}
-                                alt={image.alt || `Product image ${index + 1}`}
-                                className="w-full h-full object-cover rounded-lg border border-slate-200"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-                                }}
-                            />
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                <button
-                                    onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        image.isNew ? removeImage(index - existingImages.length) : removeExistingImage(image.url);
+                    {allImages.map((image, index) => {
+                        const isFirst = index === 0;
+                        
+                        return (
+                            <div 
+                                key={index} 
+                                className={`relative group aspect-square ${isFirst ? 'ring-2 ring-primaryEnd ring-offset-2 rounded-lg' : ''}`}
+                                draggable={image.isNew}
+                                onDragStart={() => image.isNew && (dragItem.current = index - existingImages.length)}
+                                onDragEnter={() => image.isNew && (dragOverItem.current = index - existingImages.length)}
+                                onDragEnd={image.isNew ? handleDragSort : undefined}
+                                onDragOver={(e) => e.preventDefault()}
+                            >
+                                <img
+                                    src={image.url}
+                                    alt={image.alt || `Product image ${index + 1}`}
+                                    className="w-full h-full object-cover rounded-lg border border-slate-200"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
                                     }}
-                                    className="text-white bg-coral/80 hover:bg-coral rounded-full p-1.5 transition-colors"
-                                    aria-label="Remove image"
-                                >
-                                    {React.cloneElement(ICONS.close, {className: "h-4 w-4"})}
-                                </button>
+                                />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                                    {/* CRITICAL: type="button" prevents form submission */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { 
+                                            e.preventDefault();
+                                            e.stopPropagation(); 
+                                            if (image.isNew) {
+                                                removeNewImage(index - existingImages.length);
+                                            } else {
+                                                markExistingImageForRemoval(image.url);
+                                            }
+                                        }}
+                                        className="text-white bg-coral/80 hover:bg-coral rounded-full p-1.5 transition-colors"
+                                        aria-label="Remove image"
+                                    >
+                                        {React.cloneElement(ICONS.close, {className: "h-4 w-4"})}
+                                    </button>
+                                </div>
+                                
+                                {/* Badges */}
+                                {isFirst && (
+                                    <div className="absolute top-1 left-1 bg-primaryEnd text-white text-xs font-semibold px-2 py-0.5 rounded-md">
+                                        Primary
+                                    </div>
+                                )}
+                                {image.isNew && !isFirst && (
+                                    <div className="absolute top-1 left-1 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
+                                        New
+                                    </div>
+                                )}
+                                {image.isNew && isFirst && (
+                                    <div className="absolute top-1 right-1 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
+                                        New
+                                    </div>
+                                )}
+                                {!image.isNew && !isFirst && (
+                                    <div className="absolute top-1 left-1 bg-slate-800/60 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
+                                        {index + 1}
+                                    </div>
+                                )}
                             </div>
-                            
-                            {/* Badges */}
-                            {image.isPrimary && !image.isNew && (
-                                <div className="absolute top-1 left-1 bg-primaryEnd text-white text-xs font-semibold px-2 py-0.5 rounded-md">
-                                    Primary
-                                </div>
-                            )}
-                            {image.isNew && (
-                                <div className="absolute top-1 left-1 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
-                                    New
-                                </div>
-                            )}
-                            {!image.isPrimary && !image.isNew && (
-                                <div className="absolute top-1 left-1 bg-slate-800/60 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
-                                    {index + 1}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
@@ -197,7 +227,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             >
                 <div className="text-primaryStart mb-2">{ICONS.upload}</div>
                 <p className="font-semibold text-slate-700 text-sm">Drag & drop images here, or click to select</p>
-                <p className="text-xs text-slate-500">First image is the main image. Drag to reorder new images.</p>
+                <p className="text-xs text-slate-500">First image is the primary image. Changes are saved when you click Update/Create.</p>
                 <input
                     type="file"
                     ref={fileInputRef}
@@ -210,10 +240,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
             {/* Help Text */}
             <div className="text-xs text-slate-500 space-y-1">
-                <p>• The first image will be used as the primary product image</p>
+                <p>• The first image (position 1) is always the primary product image</p>
+                <p>• Removing an image only marks it — actual deletion happens when you save</p>
                 <p>• You can upload up to 10 images total</p>
                 <p>• Supported formats: JPG, PNG, GIF, WEBP</p>
-                <p>• Drag and drop to reorder new images (existing images maintain their order)</p>
+                <p>• Drag and drop to reorder new images</p>
             </div>
         </div>
     );
