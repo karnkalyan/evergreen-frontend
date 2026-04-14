@@ -19,7 +19,7 @@ const CustomerRoute: React.FC<CustomerRouteProps> = ({ children }) => {
   }
 
   // If authenticated but not a customer, redirect to appropriate page
-  if (user?.role?.name !== 'customer') {
+  if (user?.role?.name !== 'Customer') {
     // If user is admin, redirect to admin dashboard
     if (user?.role?.name === 'Admin') {
       return <Navigate to="/admin" replace />;
