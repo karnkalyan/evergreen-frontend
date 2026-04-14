@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { FC, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ProductCard from '../components/products/ProductCard';
@@ -11,7 +11,7 @@ import { useMediaQuery } from '../hooks/useMediaQuery';
 import PromotionalGrid from '../components/home/PromotionalGrid';
 import BlogCard from '../components/blog/BlogCard';
 import { useApp } from '../hooks/useApp';
-import { HomepageSection, TrustBadgeItem, Product, Category, Brand } from '../types';
+import { HomepageSection, Product, Category, Brand } from '../types';
 import FeatureCards from '../components/home/FeatureCards';
 import ImageGallery from '../components/home/ImageGallery';
 import PromoBanner from '../components/home/PromoBanner';
@@ -41,42 +41,11 @@ import {
     ThumbsUp
 } from 'lucide-react';
 
-// ========== SKELETON COMPONENTS ==========
-const SkeletonProductCard: React.FC = () => (
-    <div className="animate-pulse">
-        <div className="bg-gray-200 rounded-2xl h-48 w-full mb-3"></div>
-        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-    </div>
-);
-
-const SkeletonCategoryItem: React.FC = () => (
-    <div className="flex flex-col items-center text-center p-2 md:p-3">
-        <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 animate-pulse"></div>
-        <div className="h-3 bg-gray-200 rounded w-12 animate-pulse"></div>
-    </div>
-);
-
-const SkeletonBrandItem: React.FC = () => (
-    <div className="flex justify-center items-center p-4 bg-slate-50 rounded-xl">
-        <div className="h-10 w-24 bg-gray-200 rounded animate-pulse"></div>
-    </div>
-);
-
-const SkeletonTestimonial: React.FC = () => (
-    <div className="bg-white rounded-xl shadow-soft-md p-6 animate-pulse">
-        <div className="flex items-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-gray-200 mr-4"></div>
-            <div className="flex-1">
-                <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-32"></div>
-            </div>
-        </div>
-        <div className="h-16 bg-gray-200 rounded w-full"></div>
-    </div>
-);
-
-const SectionTitle: React.FC<{ title: string; link?: string; linkText?: string; }> = ({ title, link, linkText = 'View All' }) => (
+const SectionTitle: React.FC<{ title: string; link?: string; linkText?: string }> = ({
+    title,
+    link,
+    linkText = 'View All'
+}) => (
     <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl md:text-3xl font-poppins font-bold text-slate-900 relative pb-2">
             {title}
@@ -104,21 +73,71 @@ const LUCIDE_ICONS: { [key: string]: React.ComponentType<any> } = {
     thumbsUp: ThumbsUp
 };
 
+const SectionSkeleton: React.FC<{ title?: string }> = ({ title }) => (
+    <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+            {title ? <SectionTitle title={title} /> : null}
+            <div className="animate-pulse space-y-4">
+                <div className="h-6 w-48 bg-slate-200 rounded"></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="bg-slate-100 rounded-2xl p-4 h-56"></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    </section>
+);
+
+const GridSkeleton: React.FC = () => (
+    <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+            <div className="animate-pulse space-y-4">
+                <div className="h-6 w-56 bg-slate-200 rounded"></div>
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-3 md:gap-4">
+                    {Array.from({ length: 18 }).map((_, i) => (
+                        <div key={i} className="bg-slate-100 rounded-2xl h-24 md:h-28"></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    </section>
+);
+
+const BrandSkeleton: React.FC = () => (
+    <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+            <div className="animate-pulse space-y-4">
+                <div className="h-6 w-56 bg-slate-200 rounded"></div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="bg-slate-100 rounded-xl h-24"></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    </section>
+);
+
 const TrustBadgesSection: React.FC<{ section: HomepageSection }> = ({ section }) => {
     const trustFeatures = section.config?.trustBadgeItems || [];
     if (!trustFeatures || trustFeatures.length === 0) return null;
 
+    const gridCols = Math.max(2, Math.min(trustFeatures.length, 6));
+
     return (
         <section className="py-8 md:py-10 md:bg-white">
             <div className="container mx-auto px-4">
-                <div className={`grid grid-cols-2 md:grid-cols-${trustFeatures.length} gap-3 md:gap-8`}>
+                <div
+                    className="grid grid-cols-2 gap-3 md:gap-8"
+                    style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+                >
                     {trustFeatures.map((feature, index) => {
                         const IconComponent = LUCIDE_ICONS[feature.icon];
                         return (
                             <div
                                 key={feature.id}
-                                className="bg-white p-4 rounded-xl shadow-soft-md flex flex-col items-center justify-center text-center 
-                                           md:bg-transparent md:p-0 md:shadow-none"
+                                className="bg-white p-4 rounded-xl shadow-soft-md flex flex-col items-center justify-center text-center md:bg-transparent md:p-0 md:shadow-none"
                                 data-aos-delay={index * 100}
                             >
                                 <div className={`${feature.color} mb-2 flex-shrink-0`}>
@@ -140,26 +159,34 @@ const TrustBadgesSection: React.FC<{ section: HomepageSection }> = ({ section })
     );
 };
 
-const BrandCarouselSection: React.FC<{ section: HomepageSection; brands: Brand[]; isLoading: boolean }> = ({ section, brands, isLoading }) => {
+const BrandCarouselSection: React.FC<{ section: HomepageSection; brands: Brand[]; loading: boolean }> = ({
+    section,
+    brands,
+    loading
+}) => {
     const brandIds = section.config?.brandIds || [];
-    if (!isLoading && (!brandIds || brandIds.length === 0)) return null;
+    if (!brandIds || brandIds.length === 0) return null;
+
+    if (loading) return <BrandSkeleton />;
+
     const brandsToShow = brands.filter(brand => brandIds.includes(brand.id));
-    if (!isLoading && brandsToShow.length === 0) return null;
+    if (brandsToShow.length === 0) return null;
 
     return (
         <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
                 <SectionTitle title={section.title} link="/manufacturers" />
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-                    {isLoading ? (
-                        Array.from({ length: 6 }).map((_, idx) => <SkeletonBrandItem key={idx} />)
-                    ) : (
-                        brandsToShow.map((brand, index) => (
-                            <div key={brand.id} className="flex justify-center items-center p-4 bg-slate-50 rounded-xl" data-aos="fade-up" data-aos-delay={index * 50}>
-                                <img src={brand.logo} alt={brand.name} className="h-10 object-contain" />
-                            </div>
-                        ))
-                    )}
+                    {brandsToShow.map((brand, index) => (
+                        <div
+                            key={brand.id}
+                            className="flex justify-center items-center p-4 bg-slate-50 rounded-xl"
+                            data-aos="fade-up"
+                            data-aos-delay={index * 50}
+                        >
+                            <img src={brand.logo} alt={brand.name} className="h-10 object-contain" />
+                        </div>
+                    ))}
                 </div>
             </div>
         </section>
@@ -182,21 +209,26 @@ const getColSpanClass = (span?: number) => {
         case 12: return 'lg:col-span-12';
         default: return 'lg:col-span-12';
     }
+};
+
+interface HomePageData {
+    products: Product[];
+    featuredProducts: Product[];
+    trendingProducts: Product[];
+    categories: Category[];
+    brands: Brand[];
 }
 
-// About Us Section Component
-const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boolean; isMobile: boolean }> = ({
-    aboutUsData,
-    loading,
-    isMobile
-}) => {
+const AboutUsSection: React.FC<{
+    aboutUsData: AboutUsData | null;
+    loading: boolean;
+}> = ({ aboutUsData, loading }) => {
     if (loading) {
         return (
             <section className="py-20 bg-slate-50">
                 <div className="container mx-auto px-4">
-                    <div className="animate-pulse">
-                        <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
-                        <div className="h-32 bg-gray-200 rounded w-full"></div>
+                    <div className="flex justify-center items-center py-12">
+                        <div className="animate-pulse text-slate-400">Loading About Us content...</div>
                     </div>
                 </div>
             </section>
@@ -231,12 +263,21 @@ const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boole
                             <Button>Learn More About Us</Button>
                         </Link>
                     </div>
+
                     <div className="lg:w-1/2" data-aos="fade-left">
-                        <img
-                            src={aboutUsData.image || '/images/company-profile.jpg'}
-                            alt={aboutUsData.title}
-                            className="rounded-2xl shadow-soft-lg w-full h-auto"
-                        />
+                        {aboutUsData.image ? (
+                            <img
+                                src={aboutUsData.image}
+                                alt={aboutUsData.title}
+                                className="rounded-2xl shadow-soft-lg w-full h-auto"
+                            />
+                        ) : (
+                            <img
+                                src="/images/company-profile.jpg"
+                                alt="Pharmacist assisting customer"
+                                className="rounded-2xl shadow-soft-lg w-full h-auto"
+                            />
+                        )}
                     </div>
                 </div>
             </div>
@@ -244,98 +285,109 @@ const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boole
     );
 };
 
-// Main HomePage Component
 const HomePage: React.FC = () => {
     const isMobile = useMediaQuery('(max-width: 767px)');
     const { homepageSections, country } = useApp();
 
-    // State for different data types (separate for staged loading)
-    const [products, setProducts] = useState<Product[]>([]);
-    const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-    const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [brands, setBrands] = useState<Brand[]>([]);
+    const sectionsToRender = useMemo(
+        () => (homepageSections.length > 0 ? homepageSections : HOME_SECTIONS),
+        [homepageSections]
+    );
 
-    // Loading flags for individual data types (used for skeletons)
-    const [isLoadingLightweight, setIsLoadingLightweight] = useState(true);
-    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+    const [homeData, setHomeData] = useState<HomePageData>({
+        products: [],
+        featuredProducts: [],
+        trendingProducts: [],
+        categories: [],
+        brands: []
+    });
 
-    // About Us and SEO state
+    const [productsLoading, setProductsLoading] = useState(true);
+    const [contentLoading, setContentLoading] = useState(true);
+
     const [aboutUsData, setAboutUsData] = useState<AboutUsData | null>(null);
     const [aboutUsLoading, setAboutUsLoading] = useState(true);
+
     const [seoData, setSeoData] = useState<any>(null);
 
-    // Step 1: Load lightweight data (categories, brands) immediately - no country dependency
     useEffect(() => {
-        const fetchLightweightData = async () => {
+        let alive = true;
+
+        const fetchStaticContent = async () => {
             try {
-                const [categoriesData, brandsData] = await Promise.all([
+                setContentLoading(true);
+
+                const [categories, brands, aboutUs, seo] = await Promise.all([
                     publicCategoryService.getCategories(),
-                    publicBrandService.getBrands()
+                    publicBrandService.getBrands(),
+                    publicAboutUsService.getAboutUs().catch(() => null),
+                    websiteSettingsService.getPageSeo('home').catch(() => null)
                 ]);
-                setCategories(categoriesData);
-                setBrands(brandsData);
+
+                if (!alive) return;
+
+                setHomeData(prev => ({
+                    ...prev,
+                    categories: Array.isArray(categories) ? categories : [],
+                    brands: Array.isArray(brands) ? brands : []
+                }));
+
+                setAboutUsData(aboutUs);
+                setSeoData(seo);
             } catch (error) {
-                console.error('Error fetching lightweight data:', error);
+                console.error('Error fetching static homepage content:', error);
             } finally {
-                setIsLoadingLightweight(false);
-            }
-        };
-        fetchLightweightData();
-    }, []); // Runs only once on mount
-
-    // Step 2: Load product data (depends on country) - refetch when country changes
-    const fetchProductsData = useCallback(async () => {
-        setIsLoadingProducts(true);
-        try {
-            const [productsData, featuredData, trendingData] = await Promise.all([
-                publicProductService.getProducts(country),
-                publicProductService.getFeaturedProducts(country),
-                publicProductService.getTrendingProducts(country)
-            ]);
-            setProducts(productsData);
-            setFeaturedProducts(featuredData);
-            setTrendingProducts(trendingData);
-        } catch (error) {
-            console.error('Error fetching products data:', error);
-        } finally {
-            setIsLoadingProducts(false);
-        }
-    }, [country]);
-
-    useEffect(() => {
-        fetchProductsData();
-    }, [fetchProductsData]); // Re-run when country changes
-
-    // About Us and SEO data (static, no country dependency)
-    useEffect(() => {
-        const fetchAboutUsData = async () => {
-            try {
-                setAboutUsLoading(true);
-                const data = await publicAboutUsService.getAboutUs();
-                setAboutUsData(data);
-            } catch (error) {
-                console.error('Error fetching About Us data:', error);
-            } finally {
-                setAboutUsLoading(false);
+                if (alive) {
+                    setContentLoading(false);
+                    setAboutUsLoading(false);
+                }
             }
         };
 
-        const fetchSeoData = async () => {
-            try {
-                const data = await websiteSettingsService.getPageSeo('home');
-                setSeoData(data);
-            } catch (error) {
-                console.error('Error fetching SEO data:', error);
-            }
-        };
+        fetchStaticContent();
 
-        fetchAboutUsData();
-        fetchSeoData();
+        return () => {
+            alive = false;
+        };
     }, []);
 
+    useEffect(() => {
+        let alive = true;
+
+        const fetchProducts = async () => {
+            try {
+                setProductsLoading(true);
+
+                const [products, featuredProducts, trendingProducts] = await Promise.all([
+                    publicProductService.getProducts(country),
+                    publicProductService.getFeaturedProducts(country),
+                    publicProductService.getTrendingProducts(country)
+                ]);
+
+                if (!alive) return;
+
+                setHomeData(prev => ({
+                    ...prev,
+                    products: Array.isArray(products) ? products : [],
+                    featuredProducts: Array.isArray(featuredProducts) ? featuredProducts : [],
+                    trendingProducts: Array.isArray(trendingProducts) ? trendingProducts : []
+                }));
+            } catch (error) {
+                console.error('Error fetching product data:', error);
+            } finally {
+                if (alive) setProductsLoading(false);
+            }
+        };
+
+        fetchProducts();
+
+        return () => {
+            alive = false;
+        };
+    }, [country]);
+
     const getProductsByCategory = (slug: string, count: number = 10) => {
-        return products.filter(p => p.category?.slug === slug).slice(0, count);
+        return homeData.products.filter(p => p.category?.slug === slug).slice(0, count);
     };
 
     const renderSection = (section: HomepageSection, index: number, isNested: boolean = false) => {
@@ -357,49 +409,56 @@ const HomePage: React.FC = () => {
                     <BrandCarouselSection
                         key={section.id}
                         section={section}
-                        brands={brands}
-                        isLoading={isLoadingLightweight}
+                        brands={homeData.brands}
+                        loading={contentLoading}
                     />
                 );
 
             case 'FEATURED_PRODUCTS': {
-                const featured = featuredProducts.length > 0
-                    ? featuredProducts.slice(0, getConfig('productCount', 8))
-                    : products.filter(p => p.isFeatured).slice(0, getConfig('productCount', 8));
+                if (productsLoading) {
+                    return <SectionSkeleton key={section.id} title={section.title} />;
+                }
+
+                const featuredProducts =
+                    homeData.featuredProducts.length > 0
+                        ? homeData.featuredProducts.slice(0, getConfig('productCount', 8))
+                        : homeData.products.filter(p => p.isFeatured).slice(0, getConfig('productCount', 8));
 
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
                             <SectionTitle title={section.title} link="/category/all" />
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                {isLoadingProducts ? (
-                                    Array.from({ length: 8 }).map((_, idx) => <SkeletonProductCard key={idx} />)
-                                ) : (
-                                    featured.map((product, idx) => (
+                            {featuredProducts.length === 0 ? (
+                                <div className="text-slate-500">No featured products available.</div>
+                            ) : (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                    {featuredProducts.map((product, idx) => (
                                         <ProductCard key={product.id} product={product} index={6 + idx * 2} />
-                                    ))
-                                )}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </section>
                 );
             }
 
             case 'CATEGORY_GRID': {
+                if (contentLoading) return <GridSkeleton key={section.id} />;
+
                 const start = (getConfig('categoryDisplayStart', 1)) - 1;
                 const count = getConfig('categoryDisplayCount', 18);
                 const end = start + count;
-                const categoriesToShow = categories.slice(start, end);
+                const categoriesToShow = homeData.categories.slice(start, end);
 
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
                             <SectionTitle title={section.title} />
-                            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-3 md:gap-4">
-                                {isLoadingLightweight ? (
-                                    Array.from({ length: 18 }).map((_, idx) => <SkeletonCategoryItem key={idx} />)
-                                ) : (
-                                    categoriesToShow.map((category, idx) => (
+                            {categoriesToShow.length === 0 ? (
+                                <div className="text-slate-500">No categories available.</div>
+                            ) : (
+                                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-3 md:gap-4">
+                                    {categoriesToShow.map((category, idx) => (
                                         <Link
                                             key={category.id}
                                             to={`/category/${category.slug}`}
@@ -419,9 +478,9 @@ const HomePage: React.FC = () => {
                                                 {category.name}
                                             </span>
                                         </Link>
-                                    ))
-                                )}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </section>
                 );
@@ -430,13 +489,18 @@ const HomePage: React.FC = () => {
             case 'CATEGORY_CAROUSEL': {
                 const categorySlug = getConfig('categorySlug');
                 if (!categorySlug) return null;
-                const categoryProducts = getProductsByCategory(categorySlug, getConfig('productCount', 8));
+
+                if (productsLoading) {
+                    return <SectionSkeleton key={section.id} title={section.title} />;
+                }
+
+                const products = getProductsByCategory(categorySlug, getConfig('productCount', 8));
+
                 return (
                     <ProductCarousel
                         key={section.id}
                         title={section.title}
-                        products={categoryProducts}
-                        isLoading={isLoadingProducts}
+                        products={products}
                         categorySlug={categorySlug}
                         bgClass={`${paddingClass} ${bgClass}`}
                     />
@@ -446,6 +510,7 @@ const HomePage: React.FC = () => {
             case 'PROMO_GRID': {
                 const promoGridItems = getConfig('promoGridItems', []);
                 if (!promoGridItems || promoGridItems.length === 0) return null;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} data-aos="fade-in" key={section.id}>
                         <div className="container mx-auto px-4">
@@ -459,6 +524,7 @@ const HomePage: React.FC = () => {
             case 'FEATURE_CARDS': {
                 const featureCards = getConfig('featureCards', []);
                 if (!featureCards || featureCards.length === 0) return null;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
@@ -473,6 +539,7 @@ const HomePage: React.FC = () => {
                 const galleryImages = getConfig('galleryImages', []);
                 const galleryLayout = getConfig('galleryLayout', 'grid');
                 if (!galleryImages || galleryImages.length === 0) return null;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
@@ -502,6 +569,7 @@ const HomePage: React.FC = () => {
             case 'PROMO_CARDS': {
                 const promoCards = getConfig('promoCards', []);
                 if (!promoCards || promoCards.length === 0) return null;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
@@ -523,6 +591,7 @@ const HomePage: React.FC = () => {
             case 'FAQ': {
                 const faqItems = getConfig('faqItems', []);
                 if (!faqItems || faqItems.length === 0) return null;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
@@ -536,6 +605,7 @@ const HomePage: React.FC = () => {
             case 'VIDEO': {
                 const videoUrl = getConfig('videoUrl');
                 if (!videoUrl) return null;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
@@ -565,12 +635,14 @@ const HomePage: React.FC = () => {
                 const gridItems = getConfig('items', []);
                 const columnTemplate = getConfig('columnTemplate', [12]);
                 if (!gridItems || gridItems.length === 0) return null;
+
                 const numColumns = columnTemplate.length > 0 ? columnTemplate.length : 1;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                                {gridItems.map((childSection, childIndex) => {
+                                {gridItems.map((childSection: HomepageSection, childIndex: number) => {
                                     const span = columnTemplate[childIndex % numColumns] || 12;
                                     return (
                                         <div key={childSection.id} className={`min-w-0 ${getColSpanClass(span)}`}>
@@ -587,6 +659,7 @@ const HomePage: React.FC = () => {
             case 'KEY_METRICS': {
                 const keyMetrics = getConfig('keyMetrics', []);
                 if (!keyMetrics || keyMetrics.length === 0) return null;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
@@ -601,12 +674,13 @@ const HomePage: React.FC = () => {
                 const testimonialItems = getConfig('testimonialItems', []);
                 if (!testimonialItems || testimonialItems.length === 0) return null;
                 if (isMobile && !isNested) return null;
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className={isNested ? '' : 'container mx-auto px-4'}>
                             <SectionTitle title={section.title} />
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {testimonialItems.map((testimonial, idx) => (
+                                {testimonialItems.map((testimonial: any, idx: number) => (
                                     <TestimonialCard key={testimonial.id} testimonial={testimonial} index={idx} />
                                 ))}
                             </div>
@@ -638,7 +712,10 @@ const HomePage: React.FC = () => {
         <>
             <Helmet>
                 <title>{seoData?.metaTitle || 'Evergreen Medicine - Your Health, Our Priority'}</title>
-                <meta name="description" content={seoData?.metaDescription || 'Get authentic medicines and health products delivered to your doorstep, quickly and safely.'} />
+                <meta
+                    name="description"
+                    content={seoData?.metaDescription || 'Get authentic medicines and health products delivered to your doorstep, quickly and safely.'}
+                />
                 {seoData?.canonicalUrl && <link rel="canonical" href={seoData.canonicalUrl} />}
                 {seoData?.ogTitle && <meta property="og:title" content={seoData.ogTitle} />}
                 {seoData?.ogDescription && <meta property="og:description" content={seoData.ogDescription} />}
@@ -652,11 +729,15 @@ const HomePage: React.FC = () => {
                     </script>
                 )}
             </Helmet>
+
             <div className="bg-slate-50">
-                {/* Mobile Hero View */}
                 <div className="md:hidden p-4" data-aos="fade-in">
                     <div className="relative rounded-2xl shadow-lg overflow-hidden text-white">
-                        <img src="hero-bg.jpeg" alt="Healthcare professional with equipment" className="absolute inset-0 w-full h-full object-cover" />
+                        <img
+                            src="hero-bg.jpeg"
+                            alt="Healthcare professional with equipment"
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
                         <div className="absolute inset-0 bg-gradient-to-r from-slate-800/80 to-slate-800/30"></div>
                         <div className="relative p-8">
                             <h1 className="text-4xl font-serif font-bold mb-4 leading-tight">Your Health, Our Priority</h1>
@@ -668,14 +749,18 @@ const HomePage: React.FC = () => {
                             </Link>
                         </div>
                     </div>
+
                     <div className="mt-6" data-aos="fade-up">
                         <MedicineRequestForm />
                     </div>
                 </div>
 
-                {/* Desktop Hero View */}
                 <section className="hidden md:block relative text-white" data-aos="fade-in">
-                    <img src="hero-bg.jpeg" alt="Healthcare professional with equipment" className="absolute inset-0 w-full h-full object-cover" />
+                    <img
+                        src="hero-bg.jpeg"
+                        alt="Healthcare professional with equipment"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 to-slate-900/20"></div>
                     <div className="relative container mx-auto px-4">
                         <div className="py-24 md:py-40 flex justify-between items-center">
@@ -690,6 +775,7 @@ const HomePage: React.FC = () => {
                                     </Link>
                                 </div>
                             </div>
+
                             <div className="w-full max-w-md" data-aos="fade-left">
                                 <MedicineRequestForm />
                             </div>
@@ -697,20 +783,13 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* Render all homepage sections with progressive loading */}
-                {homepageSections.map((section, index) => renderSection(section, index))}
+                {sectionsToRender.map((section, index) => renderSection(section, index))}
 
-                {/* About Us Section (desktop only) */}
                 {!isMobile && (
-                    <AboutUsSection
-                        aboutUsData={aboutUsData}
-                        loading={aboutUsLoading}
-                        isMobile={isMobile}
-                    />
+                    <AboutUsSection aboutUsData={aboutUsData} loading={aboutUsLoading} />
                 )}
             </div>
 
-            {/* WhatsApp Button */}
             <a
                 href="https://wa.me/+16622191702?text=Hello%20Evergreen%20Medicine"
                 target="_blank"
