@@ -3,19 +3,19 @@ import { apiRequest, publicApiRequest, handleApiError } from './api';
 // Helper function to get full media URL
 export const getMediaUrl = (mediaPath) => {
   if (!mediaPath) return '/placeholder-image.jpg';
-  
+
   if (mediaPath.startsWith('http')) {
     return mediaPath;
   }
-  
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+
+  const baseUrl = "/api";
   return `${baseUrl}${mediaPath}`;
 };
 
 // Media types for filtering
 export const MEDIA_TYPES = {
   IMAGE: 'IMAGE',
-  DOCUMENT: 'DOCUMENT', 
+  DOCUMENT: 'DOCUMENT',
   VIDEO: 'VIDEO',
   AUDIO: 'AUDIO',
   OTHER: 'OTHER',
@@ -27,7 +27,7 @@ export const mediaService = {
   getMedia: async (params = {}) => {
     try {
       const queryParams = new URLSearchParams();
-      
+
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           queryParams.append(key, value);
@@ -35,7 +35,7 @@ export const mediaService = {
       });
 
       const response = await apiRequest(`/media?${queryParams}`);
-      
+
       if (response.success && response.data) {
         // Add full URLs to media items
         const mediaWithFullUrls = response.data.media.map(media => ({
@@ -49,7 +49,7 @@ export const mediaService = {
           media: mediaWithFullUrls
         };
       }
-      
+
       return {
         media: [],
         pagination: {}
@@ -67,7 +67,7 @@ export const mediaService = {
   getMediaById: async (id) => {
     try {
       const response = await apiRequest(`/media/${id}`);
-      
+
       if (response.success && response.data) {
         const media = response.data;
         return {
@@ -90,7 +90,7 @@ export const mediaService = {
         method: 'POST',
         body: formData,
       });
-      
+
       if (response.success && response.data) {
         // Add full URLs to uploaded media
         const mediaWithFullUrls = response.data.media.map(media => ({
@@ -106,7 +106,7 @@ export const mediaService = {
           }
         };
       }
-      
+
       return response;
     } catch (error) {
       handleApiError(error, 'Failed to upload media');
@@ -124,7 +124,7 @@ export const mediaService = {
         },
         body: JSON.stringify(updateData),
       });
-      
+
       if (response.success && response.data) {
         const media = response.data;
         return {
@@ -136,7 +136,7 @@ export const mediaService = {
           }
         };
       }
-      
+
       return response;
     } catch (error) {
       handleApiError(error, 'Failed to update media');
@@ -150,7 +150,7 @@ export const mediaService = {
       const response = await apiRequest(`/media/${id}`, {
         method: 'DELETE',
       });
-      
+
       return response;
     } catch (error) {
       handleApiError(error, 'Failed to delete media');
@@ -168,7 +168,7 @@ export const mediaService = {
         },
         body: JSON.stringify({ ids }),
       });
-      
+
       return response;
     } catch (error) {
       handleApiError(error, 'Failed to delete media');
@@ -193,11 +193,11 @@ export const mediaService = {
   // Format file size
   formatFileSize: (bytes) => {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   },
 
@@ -222,7 +222,7 @@ export const publicMediaService = {
   getMediaById: async (id) => {
     try {
       const response = await publicApiRequest(`/media/public/${id}`);
-      
+
       if (response.success && response.data) {
         const media = response.data;
         return {
