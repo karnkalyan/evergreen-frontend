@@ -48,14 +48,14 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:4000';
+const API_BASE_URL = "/api";
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // FIXED: Use proper case for role names
-const isCustomer = !!user && user.role?.name === 'customer'; // Use lowercase
+  const isCustomer = !!user && user.role?.name === 'customer'; // Use lowercase
   const isAdmin = !!user && user.role?.name === 'Admin';
 
   const refreshAccessToken = async (): Promise<boolean> => {
@@ -93,20 +93,20 @@ const isCustomer = !!user && user.role?.name === 'customer'; // Use lowercase
       } else if (response.status === 401) {
         console.log("Access token expired, attempting refresh...");
         const refreshSuccess = await refreshAccessToken();
-        
+
         if (refreshSuccess) {
           const retryResponse = await fetch(`${API_BASE_URL}/auth/me`, {
             method: 'GET',
             credentials: 'include',
           });
-          
+
           if (retryResponse.ok) {
             const retryData = await retryResponse.json();
             setUser(retryData.user);
             return true;
           }
         }
-        
+
         setUser(null);
         return false;
       } else {
@@ -141,34 +141,34 @@ const isCustomer = !!user && user.role?.name === 'customer'; // Use lowercase
     return () => clearInterval(refreshInterval);
   }, [user]);
 
-const login = async (email: string, password: string): Promise<boolean> => {
-  setIsLoading(true);
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-      credentials: 'include',
-    });
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Login failed with status: ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Login failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+
+      // console.log(`${data.user.role.name} logged in successfully`);
+      return true;
+    } catch (error: any) {
+      console.error("Login failed:", error.message);
+      setUser(null);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-
-    const data = await response.json();
-    setUser(data.user);
-    
-    // console.log(`${data.user.role.name} logged in successfully`);
-    return true;
-  } catch (error: any) {
-    console.error("Login failed:", error.message);
-    setUser(null);
-    throw error;
-  } finally {
-    setIsLoading(false);
-  }
-};;
+  };;
 
   const logout = async () => {
     setIsLoading(true);
@@ -188,11 +188,11 @@ const login = async (email: string, password: string): Promise<boolean> => {
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      login, 
-      logout, 
-      isAuthenticated, 
+    <AuthContext.Provider value={{
+      user,
+      login,
+      logout,
+      isAuthenticated,
       isLoading,
       isCustomer,
       isAdmin
