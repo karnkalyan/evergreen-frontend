@@ -4,10 +4,10 @@ import Button from './Button';
 import { orderService } from '../../lib/orderService';
 import { toast } from 'react-hot-toast';
 
-const EmailModal = ({ 
-  isOpen, 
-  onClose, 
-  order, 
+const EmailModal = ({
+  isOpen,
+  onClose,
+  order,
   onEmailSent,
   loading = false
 }) => {
@@ -199,19 +199,19 @@ Evergreen Medicine`
       if (order.user?.firstName) {
         return `${order.user.firstName} ${order.user.lastName || ''}`.trim();
       }
-      
+
       // Try to get from shipping address
       if (order.shippingAddress) {
         try {
-          const shippingAddress = typeof order.shippingAddress === 'string' 
-            ? JSON.parse(order.shippingAddress) 
+          const shippingAddress = typeof order.shippingAddress === 'string'
+            ? JSON.parse(order.shippingAddress)
             : order.shippingAddress;
           return shippingAddress.name || 'Customer';
         } catch (error) {
           console.error('Error parsing shipping address:', error);
         }
       }
-      
+
       return 'Customer';
     };
 
@@ -219,10 +219,10 @@ Evergreen Medicine`
     const getShippingAddress = () => {
       if (order.shippingAddress) {
         try {
-          const shippingAddress = typeof order.shippingAddress === 'string' 
-            ? JSON.parse(order.shippingAddress) 
+          const shippingAddress = typeof order.shippingAddress === 'string'
+            ? JSON.parse(order.shippingAddress)
             : order.shippingAddress;
-          
+
           return [
             shippingAddress.streetAddress || shippingAddress.street,
             shippingAddress.city,
@@ -239,9 +239,9 @@ Evergreen Medicine`
     // Get tracking URL
     const getTrackingUrl = () => {
       if (order.trackingNumber) {
-        return `${window.location.origin}/track-order/${order.trackingNumber}`;
+        return `${window.location.origin}/account/track-order/${order.trackingNumber}`;
       }
-      return `${window.location.origin}/orders/${order.id}`;
+      return `${window.location.origin}/account/orders/${order.id}`;
     };
 
     // Exact variable mapping matching your emailAutomationService
@@ -251,7 +251,7 @@ Evergreen Medicine`
       '{customer_first_name}': order.user?.firstName || 'Customer',
       '{customer_email}': order.user?.email || order.contactEmail || 'N/A',
       '{customer_phone}': order.user?.phoneNumber || order.contactPhone || 'N/A',
-      
+
       // Order variables (exactly like automation service)
       '{order_id}': order.orderNumber || 'N/A',
       '{order_number}': order.orderNumber || 'N/A', // Alias for compatibility
@@ -260,34 +260,34 @@ Evergreen Medicine`
       '{order_status}': order.status ? order.status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Processing',
       '{payment_status}': order.paymentStatus ? order.paymentStatus.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Pending',
       '{payment_method}': order.paymentMethodCode ? order.paymentMethodCode.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : 'Credit Card',
-      
+
       // Shipping variables
       '{shipping_address}': getShippingAddress(),
       '{shipping_method}': order.shippingMethod || 'Standard Shipping',
       '{tracking_number}': order.trackingNumber || 'Not available yet',
       '{estimated_delivery}': order.estimatedDelivery ? new Date(order.estimatedDelivery).toLocaleDateString() : 'To be confirmed',
-      
+
       // Payment variables
       '{transaction_id}': order.payment?.transactionId || 'N/A',
       '{amount_paid}': order.totalAmount ? `$${order.totalAmount.toFixed(2)}` : '$0.00',
-      
+
       // URL variables (exactly like automation service)
-      '{order_tracking_url}': `${window.location.origin}/orders/${order.id}`,
+      '{order_tracking_url}': `${window.location.origin}/account/orders/${order.id}`,
       '{tracking_url}': getTrackingUrl(),
-      '{review_url}': `${window.location.origin}/orders/${order.id}/review`,
+      '{review_url}': `${window.location.origin}/account/orders/${order.id}/review`,
       '{website_url}': window.location.origin,
       '{account_url}': `${window.location.origin}/account`,
       '{shop_url}': `${window.location.origin}/shop`,
       '{support_url}': `${window.location.origin}/contact`,
-      
+
       // Contact variables (exactly like automation service)
-      '{support_email}': 'support@evergreenmed.com',
+      '{support_email}': 'med@evergreenpharma.us',
       '{support_phone}': '+1 (555) 123-4567',
-      
+
       // Date variables
       '{current_date}': new Date().toLocaleDateString(),
       '{current_year}': new Date().getFullYear().toString(),
-      
+
       // System variables
       '{site_name}': 'Evergreen Medicine'
     };
@@ -298,14 +298,14 @@ Evergreen Medicine`
     processedContent = processedContent.replace(/{if ([^}]+)}(.*?){endif}/gs, (match, condition, conditionalContent) => {
       const varName = `{${condition.trim()}}`;
       const variableValue = variables[varName];
-      
+
       // Show conditional content if variable has a meaningful value (like automation service)
-      if (variableValue && 
-          variableValue !== 'Not available yet' && 
-          variableValue !== 'N/A' && 
-          variableValue !== 'To be confirmed' &&
-          !variableValue.includes('Not available') &&
-          variableValue !== 'Address not available') {
+      if (variableValue &&
+        variableValue !== 'Not available yet' &&
+        variableValue !== 'N/A' &&
+        variableValue !== 'To be confirmed' &&
+        !variableValue.includes('Not available') &&
+        variableValue !== 'Address not available') {
         return conditionalContent;
       }
       return '';
@@ -331,7 +331,7 @@ Evergreen Medicine`
       setSelectedTemplate(defaultTemplate.id);
       setSubject(defaultTemplate.subject);
       setBody(defaultTemplate.body);
-      
+
       // Generate initial preview
       updatePreview(defaultTemplate.subject, defaultTemplate.body);
     }
@@ -389,14 +389,14 @@ Evergreen Medicine`
 
       if (result.success) {
         toast.success(`Email sent successfully to ${recipientEmail}!`);
-        onEmailSent && onEmailSent({ 
-          subject: subject.trim(), 
+        onEmailSent && onEmailSent({
+          subject: subject.trim(),
           body: body.trim(),
           recipient: recipientEmail,
-          messageId: result.data?.messageId 
+          messageId: result.data?.messageId
         });
         onClose();
-        
+
         // Reset form
         setSubject('');
         setBody('');
@@ -515,7 +515,7 @@ Evergreen Medicine`
         </body>
       </html>
     `;
-    
+
     previewWindow.document.write(previewHTML);
     previewWindow.document.close();
   };
@@ -526,7 +526,7 @@ Evergreen Medicine`
     const end = textarea.selectionEnd;
     const newBody = body.substring(0, start) + variable + body.substring(end);
     setBody(newBody);
-    
+
     // Focus back on textarea and set cursor position
     setTimeout(() => {
       textarea.focus();
@@ -541,7 +541,7 @@ Evergreen Medicine`
     '{customer_first_name}',
     '{customer_email}',
     '{customer_phone}',
-    
+
     // Order variables
     '{order_id}',
     '{order_number}',
@@ -550,17 +550,17 @@ Evergreen Medicine`
     '{order_status}',
     '{payment_status}',
     '{payment_method}',
-    
+
     // Shipping variables
     '{shipping_address}',
     '{shipping_method}',
     '{tracking_number}',
     '{estimated_delivery}',
-    
+
     // Payment variables
     '{transaction_id}',
     '{amount_paid}',
-    
+
     // URL variables
     '{order_tracking_url}',
     '{tracking_url}',
@@ -569,15 +569,15 @@ Evergreen Medicine`
     '{account_url}',
     '{shop_url}',
     '{support_url}',
-    
+
     // Contact variables
     '{support_email}',
     '{support_phone}',
-    
+
     // Date variables
     '{current_date}',
     '{current_year}',
-    
+
     // System variables
     '{site_name}'
   ];
@@ -623,11 +623,10 @@ Evergreen Medicine`
                     key={template.id}
                     type="button"
                     onClick={() => handleTemplateChange(template.id)}
-                    className={`p-3 text-left rounded-lg border transition-colors ${
-                      selectedTemplate === template.id
-                        ? 'border-green-500 bg-green-50 text-green-700'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`p-3 text-left rounded-lg border transition-colors ${selectedTemplate === template.id
+                      ? 'border-green-500 bg-green-50 text-green-700'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
                     <div className="font-medium text-sm mb-1">{template.name}</div>
                     <div className="text-xs text-gray-500 line-clamp-2">
@@ -710,7 +709,7 @@ Evergreen Medicine`
               </div>
               <div className="text-xs text-gray-600 space-y-1">
                 <p className="flex items-center gap-1">
-                  <span className="font-semibold">Conditional Content:</span> 
+                  <span className="font-semibold">Conditional Content:</span>
                   <code className="bg-white px-1 py-0.5 rounded border">{"{if variable}content{endif}"}</code>
                 </p>
                 <p>• Variables will be automatically replaced with actual order data when sent</p>
@@ -730,25 +729,25 @@ Evergreen Medicine`
                   <div className="text-green-200 text-sm">Health & Wellness</div>
                 </div>
               </div>
-              
+
               <div className="p-4 border-b border-gray-200 bg-gray-50">
                 <div className="text-sm">
                   <div><strong>To:</strong> {order?.user?.email || order?.contactEmail || 'Customer'}</div>
                   <div><strong>Subject:</strong> {processedPreview.subject}</div>
                 </div>
               </div>
-              
+
               <div className="p-4 text-sm whitespace-pre-line leading-relaxed">
                 {processedPreview.body || 'Preview will appear here...'}
               </div>
-              
+
               <div className="p-4 bg-gray-50 border-t border-gray-200 text-xs text-gray-600">
                 <div className="text-center">
                   Evergreen Medicine • support@evergreenmed.com • +1 (555) 123-4567
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <h4 className="font-medium text-blue-900 text-sm mb-2">Preview Information</h4>
               <ul className="text-xs text-blue-700 space-y-1">
