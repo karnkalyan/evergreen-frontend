@@ -27,13 +27,13 @@ import { publicCategoryService } from '../lib/categoryService';
 import { publicBrandService } from '../lib/brandService';
 import { publicAboutUsService, AboutUsData } from '../lib/aboutUsService'; // Add this import
 import { websiteSettingsService } from '../lib/websiteSettingsService';
-import { 
-    Shield, 
-    Truck, 
-    CreditCard, 
-    Clock, 
-    Heart, 
-    Star, 
+import {
+    Shield,
+    Truck,
+    CreditCard,
+    Clock,
+    Heart,
+    Star,
     Award,
     CheckCircle,
     Lock,
@@ -80,8 +80,8 @@ const TrustBadgesSection: FC<{ section: HomepageSection }> = ({ section }) => {
                     {trustFeatures.map((feature, index) => {
                         const IconComponent = LUCIDE_ICONS[feature.icon];
                         return (
-                            <div 
-                                key={feature.id} 
+                            <div
+                                key={feature.id}
                                 className="bg-white p-4 rounded-xl shadow-soft-md flex flex-col items-center justify-center text-center 
                                            md:bg-transparent md:p-0 md:shadow-none"
                                 data-aos-delay={index * 100}
@@ -114,10 +114,10 @@ const BrandCarouselSection: FC<{ section: HomepageSection; brands: Brand[] }> = 
     return (
         <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
-                 <SectionTitle title={section.title} link="/manufacturers" />
-                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+                <SectionTitle title={section.title} link="/manufacturers" />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
                     {brandsToShow.map((brand, index) => (
-                        <div key={brand.id} className="flex justify-center items-center p-4 bg-slate-50 rounded-xl" data-aos="fade-up" data-aos-delay={index*50}>
+                        <div key={brand.id} className="flex justify-center items-center p-4 bg-slate-50 rounded-xl" data-aos="fade-up" data-aos-delay={index * 50}>
                             <img src={brand.logo} alt={brand.name} className="h-10 object-contain" />
                         </div>
                     ))}
@@ -155,10 +155,10 @@ interface HomePageData {
 }
 
 // Add About Us Section Component
-const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boolean; isMobile: boolean }> = ({ 
-    aboutUsData, 
-    loading, 
-    isMobile 
+const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boolean; isMobile: boolean }> = ({
+    aboutUsData,
+    loading,
+    isMobile
 }) => {
     if (loading) {
         return (
@@ -204,16 +204,16 @@ const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boole
                     </div>
                     <div className="lg:w-1/2" data-aos="fade-left">
                         {aboutUsData.image ? (
-                            <img 
-                                src={aboutUsData.image} 
-                                alt={aboutUsData.title} 
+                            <img
+                                src={aboutUsData.image}
+                                alt={aboutUsData.title}
                                 className="rounded-2xl shadow-soft-lg w-full h-auto"
                             />
                         ) : (
-                            <img 
-                                src="/images/company-profile.jpg" 
-                                alt="Pharmacist assisting customer" 
-                                className="rounded-2xl shadow-soft-lg w-full h-auto" 
+                            <img
+                                src="/images/company-profile.jpg"
+                                alt="Pharmacist assisting customer"
+                                className="rounded-2xl shadow-soft-lg w-full h-auto"
                             />
                         )}
                     </div>
@@ -226,7 +226,7 @@ const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boole
 const HomePage: React.FC = () => {
     const isMobile = useMediaQuery('(max-width: 767px)');
     const { homepageSections, country } = useApp();
-    
+
     const [homeData, setHomeData] = useState<HomePageData>({
         products: [],
         featuredProducts: [],
@@ -247,7 +247,7 @@ const HomePage: React.FC = () => {
         const fetchHomeData = async () => {
             try {
                 setHomeData(prev => ({ ...prev, loading: true }));
-                
+
                 const [products, featuredProducts, trendingProducts, categories, brands] = await Promise.all([
                     publicProductService.getProducts(country),
                     publicProductService.getFeaturedProducts(country),
@@ -305,7 +305,7 @@ const HomePage: React.FC = () => {
 
     const renderSection = (section: HomepageSection, index: number, isNested: boolean = false) => {
         if (!section.enabled) return null;
-        
+
         const bgClass = isNested ? 'bg-transparent' : (index % 2 === 0 ? 'bg-white' : 'bg-slate-50');
         const paddingClass = isNested ? '' : 'py-16';
 
@@ -326,18 +326,18 @@ const HomePage: React.FC = () => {
             return section.config?.[key] ?? defaultValue;
         };
 
-        switch(section.type) {
+        switch (section.type) {
             case 'TRUST_BADGES':
-                return <TrustBadgesSection key={section.id} section={section}/>;
+                return <TrustBadgesSection key={section.id} section={section} />;
             case 'BRAND_CAROUSEL':
                 return <BrandCarouselSection key={section.id} section={section} brands={homeData.brands} />;
             case 'FEATURED_PRODUCTS':
-                const featuredProducts = homeData.featuredProducts.length > 0 
+                const featuredProducts = homeData.featuredProducts.length > 0
                     ? homeData.featuredProducts.slice(0, getConfig('productCount', 8))
                     : homeData.products.filter(p => p.isFeatured).slice(0, getConfig('productCount', 8));
-                
+
                 return (
-                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
+                    <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
                             <SectionTitle title={section.title} link="/category/all" />
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -359,14 +359,14 @@ const HomePage: React.FC = () => {
                             <SectionTitle title={section.title} />
                             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-3 md:gap-4">
                                 {categoriesToShow.map((category, index) => (
-                                    <Link 
-                                        key={category.id} 
+                                    <Link
+                                        key={category.id}
                                         to={`/category/${category.slug}`}
                                         className="group flex flex-col items-center text-center p-2 md:p-3 bg-white rounded-2xl shadow-soft-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                                         data-aos="fade-up"
                                         data-aos-delay={index * 30}
                                     >
-                                        <div 
+                                        <div
                                             className="w-16 h-16 rounded-full flex items-center justify-center mb-2 transition-all duration-300 group-hover:scale-105"
                                             style={{ backgroundColor: `${category.color}20` }}
                                         >
@@ -386,7 +386,7 @@ const HomePage: React.FC = () => {
                 if (!categorySlug) return null;
                 const products = getProductsByCategory(categorySlug, getConfig('productCount', 8));
                 return <ProductCarousel key={section.id} title={section.title} products={products} categorySlug={categorySlug} bgClass={`${paddingClass} ${bgClass}`} />;
-            
+
             case 'PROMO_GRID':
                 const promoGridItems = getConfig('promoGridItems', []);
                 if (!promoGridItems || promoGridItems.length === 0) return null;
@@ -400,17 +400,17 @@ const HomePage: React.FC = () => {
                 );
 
             case 'FEATURE_CARDS':
-                 const featureCards = getConfig('featureCards', []);
-                 if (!featureCards || featureCards.length === 0) return null;
-                 return (
-                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
-                         <div className="container mx-auto px-4">
-                             <SectionTitle title={section.title} />
-                             <FeatureCards items={featureCards} />
-                         </div>
-                     </section>
-                 );
-            
+                const featureCards = getConfig('featureCards', []);
+                if (!featureCards || featureCards.length === 0) return null;
+                return (
+                    <section className={`${paddingClass} ${bgClass}`} key={section.id}>
+                        <div className="container mx-auto px-4">
+                            <SectionTitle title={section.title} />
+                            <FeatureCards items={featureCards} />
+                        </div>
+                    </section>
+                );
+
             case 'IMAGE_GALLERY':
                 const galleryImages = getConfig('galleryImages', []);
                 const galleryLayout = getConfig('galleryLayout', 'grid');
@@ -423,12 +423,12 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
-            
-             case 'PROMO_BANNER':
+
+            case 'PROMO_BANNER':
                 return (
                     <section className={`${paddingClass} ${index % 2 === 0 ? 'bg-transparent' : 'bg-slate-50'}`} key={section.id}>
                         <div className="container mx-auto px-4">
-                            <PromoBanner 
+                            <PromoBanner
                                 title={getConfig('promoBannerTitle', 'Special Offer')}
                                 subtitle={getConfig('promoBannerSubtitle', 'Check out our latest deals.')}
                                 buttonText={getConfig('promoBannerButtonText', 'Shop Now')}
@@ -439,7 +439,7 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
-            
+
             case 'PROMO_CARDS':
                 const promoCards = getConfig('promoCards', []);
                 if (!promoCards || promoCards.length === 0) return null;
@@ -459,36 +459,36 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
-            
+
             case 'FAQ':
-                 const faqItems = getConfig('faqItems', []);
-                 if (!faqItems || faqItems.length === 0) return null;
-                 return (
-                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
-                         <div className="container mx-auto px-4">
-                             <SectionTitle title={section.title} />
-                             <FaqSection items={faqItems} />
-                         </div>
-                     </section>
-                 );
+                const faqItems = getConfig('faqItems', []);
+                if (!faqItems || faqItems.length === 0) return null;
+                return (
+                    <section className={`${paddingClass} ${bgClass}`} key={section.id}>
+                        <div className="container mx-auto px-4">
+                            <SectionTitle title={section.title} />
+                            <FaqSection items={faqItems} />
+                        </div>
+                    </section>
+                );
 
             case 'VIDEO':
-                 const videoUrl = getConfig('videoUrl');
-                 if (!videoUrl) return null;
-                 return (
-                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
-                         <div className="container mx-auto px-4">
-                             <SectionTitle title={section.title} />
-                             <VideoSection videoUrl={videoUrl} />
-                         </div>
-                     </section>
-                 );
-            
+                const videoUrl = getConfig('videoUrl');
+                if (!videoUrl) return null;
+                return (
+                    <section className={`${paddingClass} ${bgClass}`} key={section.id}>
+                        <div className="container mx-auto px-4">
+                            <SectionTitle title={section.title} />
+                            <VideoSection videoUrl={videoUrl} />
+                        </div>
+                    </section>
+                );
+
             case 'CALL_TO_ACTION':
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
-                            <CallToActionSection 
+                            <CallToActionSection
                                 title={section.title}
                                 subtitle={getConfig('ctaSubtitle', '')}
                                 buttonText={getConfig('ctaButtonText', 'Learn More')}
@@ -498,7 +498,7 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
-            
+
             case 'GRID':
                 const gridItems = getConfig('items', []);
                 const columnTemplate = getConfig('columnTemplate', [12]);
@@ -520,48 +520,48 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
-            
+
             case 'KEY_METRICS':
                 const keyMetrics = getConfig('keyMetrics', []);
                 if (!keyMetrics || keyMetrics.length === 0) return null;
-                 return (
-                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
-                         <div className="container mx-auto px-4">
-                             <SectionTitle title={section.title} />
-                             <KeyMetricsSection items={keyMetrics} />
-                         </div>
-                     </section>
-                 );
+                return (
+                    <section className={`${paddingClass} ${bgClass}`} key={section.id}>
+                        <div className="container mx-auto px-4">
+                            <SectionTitle title={section.title} />
+                            <KeyMetricsSection items={keyMetrics} />
+                        </div>
+                    </section>
+                );
 
             case 'TESTIMONIALS':
                 const testimonialItems = getConfig('testimonialItems', []);
                 if (!testimonialItems || testimonialItems.length === 0) return null;
                 if (isMobile && !isNested) return null;
-                 return (
+                return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className={isNested ? '' : 'container mx-auto px-4'}>
                             <SectionTitle title={section.title} />
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {testimonialItems.map((testimonial, index) => (
-                                   <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
+                                    <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
                                 ))}
                             </div>
                         </div>
                     </section>
                 );
             case 'BLOG':
-                 return (
+                return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className={isNested ? '' : 'container mx-auto px-4'}>
                             <SectionTitle title={section.title} link="/blog" />
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {MOCK_BLOG_POSTS.slice(0, getConfig('postCount', 3)).map((article, index) => (
-                                   <BlogCard key={article.id} article={article} index={index} />
+                                    <BlogCard key={article.id} article={article} index={index} />
                                 ))}
                             </div>
                         </div>
                     </section>
-                 );
+                );
             default:
                 return null;
         }
@@ -586,8 +586,8 @@ const HomePage: React.FC = () => {
                 )}
             </Helmet>
             <div className="bg-slate-50">
-            {/* Company Name on Mobile */}
-            {/* {isMobile && (
+                {/* Company Name on Mobile */}
+                {/* {isMobile && (
                  <div className="bg-white py-4">
                     <div className="container mx-auto px-4">
                         <Link to="/" className="font-poppins font-bold text-primaryStart flex flex-col leading-tight">
@@ -597,76 +597,76 @@ const HomePage: React.FC = () => {
                     </div>
                 </div>
             )} */}
-            
-            {/* Hero Section */}
-            {/* Mobile Hero View */}
-            <div className="md:hidden p-4" data-aos="fade-in">
-                <div className="relative rounded-2xl shadow-lg overflow-hidden text-white">
-                    <img src="hero-bg.jpeg" alt="Healthcare professional with equipment" className="absolute inset-0 w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-slate-800/80 to-slate-800/30"></div>
-                    <div className="relative p-8">
-                        <h1 className="text-4xl font-serif font-bold mb-4 leading-tight">Your Health, Our Priority</h1>
-                        <p className="text-lg text-slate-200 mb-8">
-                            Get authentic medicines and health products delivered to your doorstep, quickly and safely.
-                        </p>
-                        <Link to="/category/all">
-                            <Button size="lg">Shop All Products</Button>
-                        </Link>
-                    </div>
-                </div>
-                
-                {/* Medicine Request Form for Mobile */}
-                <div className="mt-6" data-aos="fade-up">
-                    <MedicineRequestForm />
-                </div>
-            </div>
 
-            {/* Desktop Hero View */}
-            <section className="hidden md:block relative text-white" data-aos="fade-in">
-                <img src="hero-bg.jpeg" alt="Healthcare professional with equipment" className="absolute inset-0 w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 to-slate-900/20"></div>
-                <div className="relative container mx-auto px-4">
-                    <div className="py-24 md:py-40 flex justify-between items-center">
-                        <div className="max-w-xl" data-aos="fade-right">
-                            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4 leading-tight">Your Health, Our Priority</h1>
-                            <p className="text-lg text-slate-200 max-w-2xl mx-auto mb-8">
+                {/* Hero Section */}
+                {/* Mobile Hero View */}
+                <div className="md:hidden p-4" data-aos="fade-in">
+                    <div className="relative rounded-2xl shadow-lg overflow-hidden text-white">
+                        <img src="hero-bg.jpeg" alt="Healthcare professional with equipment" className="absolute inset-0 w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-slate-800/80 to-slate-800/30"></div>
+                        <div className="relative p-8">
+                            <h1 className="text-4xl font-serif font-bold mb-4 leading-tight">Your Health, Our Priority</h1>
+                            <p className="text-lg text-slate-200 mb-8">
                                 Get authentic medicines and health products delivered to your doorstep, quickly and safely.
                             </p>
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
-                                <Link to="/category/all">
-                                    <Button size="lg">Shop All Products</Button>
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="w-full max-w-md" data-aos="fade-left">
-                            <MedicineRequestForm />
+                            <Link to="/category/all">
+                                <Button size="lg">Shop All Products</Button>
+                            </Link>
                         </div>
                     </div>
+
+                    {/* Medicine Request Form for Mobile */}
+                    <div className="mt-6" data-aos="fade-up">
+                        <MedicineRequestForm />
+                    </div>
                 </div>
-            </section>
 
-            {homepageSections.map((section, index) => renderSection(section, index))}
+                {/* Desktop Hero View */}
+                <section className="hidden md:block relative text-white" data-aos="fade-in">
+                    <img src="hero-bg.jpeg" alt="Healthcare professional with equipment" className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 to-slate-900/20"></div>
+                    <div className="relative container mx-auto px-4">
+                        <div className="py-24 md:py-40 flex justify-between items-center">
+                            <div className="max-w-xl" data-aos="fade-right">
+                                <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4 leading-tight">Your Health, Our Priority</h1>
+                                <p className="text-lg text-slate-200 max-w-2xl mx-auto mb-8">
+                                    Get authentic medicines and health products delivered to your doorstep, quickly and safely.
+                                </p>
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
+                                    <Link to="/category/all">
+                                        <Button size="lg">Shop All Products</Button>
+                                    </Link>
+                                </div>
+                            </div>
+                            <div className="w-full max-w-md" data-aos="fade-left">
+                                <MedicineRequestForm />
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            {/* Replace static Company Profile with dynamic About Us Section */}
-            {!isMobile && (
-                <AboutUsSection 
-                    aboutUsData={aboutUsData}
-                    loading={aboutUsLoading}
-                    isMobile={isMobile}
-                />
-            )}
-        </div>
+                {homepageSections.map((section, index) => renderSection(section, index))}
 
-        {/* WhatsApp Button */}
-        <a
-            href="https://wa.me/+14247240025?text=Hello%20Evergreen%20Medicine"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="fixed bottom-24 right-6 bg-green-500 text-white rounded-full p-4 shadow-lg hover:bg-green-600 transform hover:scale-110 transition-all duration-300 z-50"
-            aria-label="Contact us on WhatsApp"
-        >
-            {React.cloneElement(ICONS.whatsapp, { className: 'w-8 h-8' })}
-        </a>
+                {/* Replace static Company Profile with dynamic About Us Section */}
+                {!isMobile && (
+                    <AboutUsSection
+                        aboutUsData={aboutUsData}
+                        loading={aboutUsLoading}
+                        isMobile={isMobile}
+                    />
+                )}
+            </div>
+
+            {/* WhatsApp Button */}
+            <a
+                href="https://wa.me/+16622191702?text=Hello%20Evergreen%20Medicine"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fixed bottom-24 right-6 bg-green-500 text-white rounded-full p-4 shadow-lg hover:bg-green-600 transform hover:scale-110 transition-all duration-300 z-50"
+                aria-label="Contact us on WhatsApp"
+            >
+                {React.cloneElement(ICONS.whatsapp, { className: 'w-8 h-8' })}
+            </a>
         </>
     );
 };

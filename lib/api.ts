@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 
-const BASE_URL = process.env.API_BASE_URL as string;
+const BASE_URL = '/api';
+
 
 function isClient() {
   return typeof window !== "undefined" && typeof document !== "undefined";
@@ -79,7 +80,7 @@ export async function apiRequest<T = any>(
     const payload = await parseResponsePayload(response);
 
     let errorMessage: string;
-    
+
     // Extract error message from different possible response structures
     if (payload && typeof payload === "object") {
       if (payload.message) {
@@ -101,18 +102,18 @@ export async function apiRequest<T = any>(
     const error = new Error(errorMessage);
     (error as any).status = response.status;
     (error as any).responseData = payload;
-    
+
     throw error;
   }
 
   // Success parsing
   if (response.status === 204 || response.status === 205) return null as unknown as T;
-  
+
   const contentType = response.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
     return await response.json() as T;
   }
-  
+
   return await response.text() as unknown as T;
 }
 
@@ -122,7 +123,7 @@ export async function publicApiRequest<T = any>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${BASE_URL}${endpoint}`;
-  
+
   // Public requests don't include credentials by default
   options.credentials = "omit";
 
@@ -151,7 +152,7 @@ export async function publicApiRequest<T = any>(
     const payload = await parseResponsePayload(response);
 
     let errorMessage: string;
-    
+
     // Extract error message from different possible response structures
     if (payload && typeof payload === "object") {
       if (payload.message) {
@@ -173,19 +174,19 @@ export async function publicApiRequest<T = any>(
     const error = new Error(errorMessage);
     (error as any).status = response.status;
     (error as any).responseData = payload;
-    
+
     console.error('Public API error:', errorMessage);
     throw error;
   }
 
   // Success parsing
   if (response.status === 204 || response.status === 205) return null as unknown as T;
-  
+
   const contentType = response.headers.get("content-type") || "";
   if (contentType.includes("application/json")) {
     return await response.json() as T;
   }
-  
+
   return await response.text() as unknown as T;
 }
 
@@ -201,9 +202,9 @@ export async function protectedApiRequest<T = any>(
 // Utility function to handle API errors with toast notifications
 export function handleApiError(error: any, defaultMessage: string = "Something went wrong") {
   console.error('API Error:', error);
-  
+
   let message = defaultMessage;
-  
+
   if (error instanceof Error) {
     message = error.message;
   } else if (typeof error === 'string') {
@@ -211,12 +212,12 @@ export function handleApiError(error: any, defaultMessage: string = "Something w
   } else if (error?.message) {
     message = error.message;
   }
-  
+
   // Show toast notification
   if (isClient()) {
     toast.error(message);
   }
-  
+
   return message;
 }
 
