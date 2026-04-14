@@ -2,7 +2,7 @@ import React, { FC, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ProductCard from '../components/products/ProductCard';
-import { MOCK_BLOG_POSTS, HOME_SECTIONS } from '../data/mockData';
+import { MOCK_BLOG_POSTS, MOCK_HOMEPAGE_LAYOUT } from '../data/mockData';
 import Button from '../components/shared/Button';
 import { ICONS } from '../constants';
 import ProductCarousel from '../components/home/ProductCarousel';
@@ -290,7 +290,7 @@ const HomePage: React.FC = () => {
     const { homepageSections, country } = useApp();
 
     const sectionsToRender = useMemo(
-        () => (homepageSections.length > 0 ? homepageSections : HOME_SECTIONS),
+        () => (homepageSections.length > 0 ? homepageSections : MOCK_HOMEPAGE_LAYOUT),
         [homepageSections]
     );
 
