@@ -711,23 +711,76 @@ const HomePage: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>{seoData?.metaTitle || 'Evergreen Medicine - Your Health, Our Priority'}</title>
+                <title>
+                    {seoData?.metaTitle ||
+                        'Buy Medicines Online | Trusted Online Pharmacy | Evergreen Medicine'}
+                </title>
+
                 <meta
                     name="description"
-                    content={seoData?.metaDescription || 'Get authentic medicines and health products delivered to your doorstep, quickly and safely.'}
+                    content={
+                        seoData?.metaDescription ||
+                        'Order genuine medicines online with fast delivery. Trusted online pharmacy for healthcare products at best prices.'
+                    }
                 />
-                {seoData?.canonicalUrl && <link rel="canonical" href={seoData.canonicalUrl} />}
-                {seoData?.ogTitle && <meta property="og:title" content={seoData.ogTitle} />}
-                {seoData?.ogDescription && <meta property="og:description" content={seoData.ogDescription} />}
-                {seoData?.ogImage && <meta property="og:image" content={seoData.ogImage} />}
-                {seoData?.twitterTitle && <meta name="twitter:title" content={seoData.twitterTitle} />}
-                {seoData?.twitterDescription && <meta name="twitter:description" content={seoData.twitterDescription} />}
-                {seoData?.twitterImage && <meta name="twitter:image" content={seoData.twitterImage} />}
-                {seoData?.structuredData && (
-                    <script type="application/ld+json">
-                        {JSON.stringify(seoData.structuredData)}
-                    </script>
-                )}
+
+                <meta name="robots" content="index, follow" />
+
+                {/* Canonical */}
+                <link
+                    rel="canonical"
+                    href={seoData?.canonicalUrl || window.location.href}
+                />
+
+                {/* Open Graph */}
+                <meta property="og:type" content="website" />
+                <meta
+                    property="og:title"
+                    content={seoData?.ogTitle || 'Evergreen Medicine'}
+                />
+                <meta
+                    property="og:description"
+                    content={
+                        seoData?.ogDescription ||
+                        'Buy medicines online safely and easily.'
+                    }
+                />
+                <meta
+                    property="og:image"
+                    content={seoData?.ogImage || '/default-og-image.jpg'}
+                />
+
+                {/* Twitter */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta
+                    name="twitter:title"
+                    content={seoData?.twitterTitle || 'Evergreen Medicine'}
+                />
+                <meta
+                    name="twitter:description"
+                    content={
+                        seoData?.twitterDescription ||
+                        'Trusted online pharmacy platform.'
+                    }
+                />
+                <meta
+                    name="twitter:image"
+                    content={seoData?.twitterImage || '/default-og-image.jpg'}
+                />
+
+                {/* Structured Data Fallback */}
+                <script type="application/ld+json">
+                    {JSON.stringify(
+                        seoData?.structuredData || {
+                            "@context": "https://schema.org",
+                            "@type": "Organization",
+                            "name": "Evergreen Medicine",
+                            "url": window.location.origin,
+                            "logo": `${window.location.origin}/logo.png`,
+                            "sameAs": []
+                        }
+                    )}
+                </script>
             </Helmet>
 
             <div className="bg-slate-50">
