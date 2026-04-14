@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
 
   // FIXED: Use proper case for role names
-  const isCustomer = !!user && user.role?.name === 'customer'; // Use lowercase
+  const isCustomer = !!user && user.role?.name === 'Customer'; // Use lowercase
   const isAdmin = !!user && user.role?.name === 'Admin';
 
   const refreshAccessToken = async (): Promise<boolean> => {
