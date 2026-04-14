@@ -61,13 +61,14 @@ const CustomerDetailPage: React.FC = () => {
   useEffect(() => {
     const fetchCustomer = async () => {
       if (!id) return;
-      
+
       try {
         setLoading(true);
         const customerData = await userService.getUserById(parseInt(id));
-        
+
+        console.log('Customer data', customerData);
         // Check if user is actually a customer
-        if (customerData && customerData.role?.name === 'customer') {
+        if (customerData && customerData.role?.name === 'Customer') {
           setCustomer(customerData);
         } else {
           toast.error('Customer not found or user is not a customer');
@@ -87,7 +88,7 @@ const CustomerDetailPage: React.FC = () => {
   useEffect(() => {
     const fetchCustomerOrders = async () => {
       if (!id) return;
-      
+
       try {
         setOrdersLoading(true);
         const response = await orderService.getUserOrders(parseInt(id));
@@ -124,7 +125,7 @@ const CustomerDetailPage: React.FC = () => {
 
     // Find the default address
     const defaultAddress = user.addresses.find(addr => addr.isDefault) || user.addresses[0];
-    
+
     return {
       name: defaultAddress.name,
       streetAddress: defaultAddress.streetAddress,
@@ -144,7 +145,7 @@ const CustomerDetailPage: React.FC = () => {
   };
 
   const getLastLogin = (user: User): string => {
-    return user.credential?.lastLogin 
+    return user.credential?.lastLogin
       ? new Date(user.credential.lastLogin).toLocaleDateString()
       : 'Never logged in';
   };
@@ -153,7 +154,7 @@ const CustomerDetailPage: React.FC = () => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return orders.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [orders, currentPage]);
-  
+
   const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
 
   if (loading) {
@@ -182,8 +183,8 @@ const CustomerDetailPage: React.FC = () => {
         <Link to="/admin/customers" className="text-sm font-semibold text-primaryEnd hover:underline">← Back to Customers</Link>
         <div className="flex items-center mt-4">
           {customer.profilePicture ? (
-            <img 
-              src={customer.profilePicture} 
+            <img
+              src={customer.profilePicture}
               alt={getFullName(customer)}
               className="w-16 h-16 object-cover rounded-full bg-slate-100 mr-4"
               onError={(e) => {
@@ -199,12 +200,11 @@ const CustomerDetailPage: React.FC = () => {
             <h1 className="text-3xl font-poppins font-bold text-slate-800">{getFullName(customer)}</h1>
             <p className="text-slate-600 mt-1">{customer.email}</p>
             <div className="flex items-center mt-2">
-              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                customer.status === 'active' ? 'bg-green-100 text-green-800' :
+              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${customer.status === 'active' ? 'bg-green-100 text-green-800' :
                 customer.status === 'inactive' ? 'bg-slate-100 text-slate-800' :
-                customer.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }`}>
+                  customer.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                }`}>
                 {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
               </span>
               <span className="ml-2 px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -234,8 +234,8 @@ const CustomerDetailPage: React.FC = () => {
                 <div>
                   <p className="font-semibold text-slate-700">{address.name}</p>
                   <p className="text-slate-700 leading-relaxed mt-1">
-                    {address.streetAddress}<br/>
-                    {address.city}, {address.state} {address.zipCode}<br/>
+                    {address.streetAddress}<br />
+                    {address.city}, {address.state} {address.zipCode}<br />
                     {address.country}
                   </p>
                 </div>
@@ -258,13 +258,12 @@ const CustomerDetailPage: React.FC = () => {
             <p><span className="font-semibold text-slate-600">Last Login:</span> {getLastLogin(customer)}</p>
             <p><span className="font-semibold text-slate-600">Total Orders:</span> {getTotalOrders()}</p>
             <p><span className="font-semibold text-slate-600">Total Spent:</span> ${getTotalSpent().toFixed(2)}</p>
-            <p><span className="font-semibold text-slate-600">Status:</span> 
-              <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
-                customer.status === 'active' ? 'bg-green-100 text-green-800' :
+            <p><span className="font-semibold text-slate-600">Status:</span>
+              <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${customer.status === 'active' ? 'bg-green-100 text-green-800' :
                 customer.status === 'inactive' ? 'bg-slate-100 text-slate-800' :
-                customer.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }`}>
+                  customer.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                }`}>
                 {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
               </span>
             </p>
@@ -279,7 +278,7 @@ const CustomerDetailPage: React.FC = () => {
               {orders.length} order{orders.length !== 1 ? 's' : ''} total
             </span>
           </div>
-          
+
           {ordersLoading ? (
             <div className="flex justify-center items-center py-8">
               <div className="text-lg">Loading orders...</div>
@@ -301,12 +300,12 @@ const CustomerDetailPage: React.FC = () => {
                     {paginatedOrders.map(order => {
                       const currencySymbol = currencySymbols[order.currency] || '$';
                       const orderDate = order.orderDate || order.createdAt;
-                      
+
                       return (
                         <tr key={order.id} className="border-b last:border-0 text-slate-700 hover:bg-slate-50/70">
                           <td className="p-4">
-                            <Link 
-                              to={`/admin/orders/${order.id}`} 
+                            <Link
+                              to={`/admin/orders/${order.id}`}
                               className="text-primaryEnd hover:underline font-semibold"
                             >
                               #{order.orderNumber}
@@ -321,12 +320,11 @@ const CustomerDetailPage: React.FC = () => {
                             </span>
                           </td>
                           <td className="p-4">
-                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                              order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
                               order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
-                              'bg-slate-100 text-slate-800'
-                            }`}>
+                                order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                                  'bg-slate-100 text-slate-800'
+                              }`}>
                               {order.paymentStatus?.charAt(0).toUpperCase() + order.paymentStatus?.slice(1) || 'Pending'}
                             </span>
                           </td>
@@ -346,13 +344,13 @@ const CustomerDetailPage: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-              
+
               {totalPages > 1 && (
                 <div className="mt-6">
-                  <AdminPagination 
-                    currentPage={currentPage} 
-                    totalPages={totalPages} 
-                    onPageChange={setCurrentPage} 
+                  <AdminPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
                   />
                 </div>
               )}
