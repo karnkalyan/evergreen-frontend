@@ -19,17 +19,17 @@ export const homepageService = {
       } else if (Array.isArray(response)) {
         sectionsArray = response;
       } else {
-        console.warn('Unexpected homepage sections response structure:', response);
+        // console.warn('Unexpected homepage sections response structure:', response);
         return [];
       }
-      
-      console.log('✅ PROCESSED HOMEPAGE SECTIONS DATA:', {
-        sectionsCount: sectionsArray.length
-      });
-      
+
+      // console.log('✅ PROCESSED HOMEPAGE SECTIONS DATA:', {
+      //   sectionsCount: sectionsArray.length
+      // });
+
       return sectionsArray;
     } catch (error) {
-      console.error('Error fetching homepage sections:', error);
+      // console.error('Error fetching homepage sections:', error);
       throw error;
     }
   },
@@ -38,8 +38,8 @@ export const homepageService = {
   getHomepageSectionById: async (id: string): Promise<HomepageSection | null> => {
     try {
       const response = await apiRequest(`/homepage-layout/${id}`);
-      console.log('📋 HOMEPAGE SECTION BY ID RESPONSE:', response);
-      
+      // console.log('📋 HOMEPAGE SECTION BY ID RESPONSE:', response);
+
       let section: HomepageSection | null = null;
 
       // Handle different response structures
@@ -50,10 +50,10 @@ export const homepageService = {
       } else if (response.id === id) {
         section = response;
       }
-      
+
       return section;
     } catch (error) {
-      console.error('Error fetching homepage section:', error);
+      // console.error('Error fetching homepage section:', error);
       throw error;
     }
   },
@@ -88,7 +88,7 @@ export const homepageService = {
       } else {
         throw new Error(response.error || response.message || 'Failed to create homepage section');
       }
-      
+
       return section;
     } catch (error) {
       console.error('Error creating homepage section:', error);
@@ -120,7 +120,7 @@ export const homepageService = {
       } else {
         throw new Error(response.error || response.message || 'Failed to update homepage section');
       }
-      
+
       return section;
     } catch (error) {
       console.error('Error updating homepage section:', error);
@@ -168,26 +168,26 @@ export const homepageService = {
     }
   },
 
- bulkUpdateHomepageSections: async (sections: HomepageSection[]): Promise<void> => {
-  try {
-    const response = await apiRequest('/homepage-layout/bulk-update', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ sections }), // Send sections directly
-    });
+  bulkUpdateHomepageSections: async (sections: HomepageSection[]): Promise<void> => {
+    try {
+      const response = await apiRequest('/homepage-layout/bulk-update', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sections }), // Send sections directly
+      });
 
-    console.log('📦 BULK UPDATE HOMEPAGE SECTIONS RESPONSE:', response);
+      console.log('📦 BULK UPDATE HOMEPAGE SECTIONS RESPONSE:', response);
 
-    if (response.success === false || response.error) {
-      throw new Error(response.error || response.message || 'Failed to bulk update homepage sections');
+      if (response.success === false || response.error) {
+        throw new Error(response.error || response.message || 'Failed to bulk update homepage sections');
+      }
+    } catch (error) {
+      console.error('Error bulk updating homepage sections:', error);
+      throw error;
     }
-  } catch (error) {
-    console.error('Error bulk updating homepage sections:', error);
-    throw error;
-  }
-},
+  },
 
   // Factory methods for creating different section types
   createSectionTemplate: (type: HomepageSectionType, title?: string): any => {
@@ -255,14 +255,14 @@ export const homepageService = {
       case 'BRAND_CAROUSEL':
         config.brandIds = [];
         break;
-    // In homeService.ts, update the TRUST_BADGES template:
-case 'TRUST_BADGES':
-  config.trustBadgeItems = [
-    { id: Date.now(), icon: 'shield', title: '100% Genuine Medicines', color: 'text-green-600' },
-    { id: Date.now(), icon: 'truck', title: 'Nationwide Delivery', color: 'text-blue-600' },
-    { id: Date.now(), icon: 'creditCard', title: 'Secure Payments', color: 'text-indigo-600' }
-  ];
-  break;
+      // In homeService.ts, update the TRUST_BADGES template:
+      case 'TRUST_BADGES':
+        config.trustBadgeItems = [
+          { id: Date.now(), icon: 'shield', title: '100% Genuine Medicines', color: 'text-green-600' },
+          { id: Date.now(), icon: 'truck', title: 'Nationwide Delivery', color: 'text-blue-600' },
+          { id: Date.now(), icon: 'creditCard', title: 'Secure Payments', color: 'text-indigo-600' }
+        ];
+        break;
 
       default:
         // For any other type, just create empty config

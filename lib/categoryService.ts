@@ -4,12 +4,12 @@ import { Category, ApiResponse } from '../types';
 // Helper function to get full image URL
 export const getImageUrl = (imagePath: string): string => {
   if (!imagePath) return '/placeholder-image.jpg';
-  
+
   if (imagePath.startsWith('http')) {
     return imagePath;
   }
-  
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+
+  const baseUrl = '/api'
   return `${baseUrl}${imagePath}`;
 };
 
@@ -19,10 +19,10 @@ export const categoryService = {
   getCategories: async (): Promise<Category[]> => {
     try {
       const response = await apiRequest('/categories') as ApiResponse;
-          console.log('📊 RAW CATEGORIES API RESPONSE:', response); // Add this line
+      console.log('📊 RAW CATEGORIES API RESPONSE:', response); // Add this line
 
       console.log('Categories API Response:', response); // Debug log
-      
+
       // Handle different response structures
       if (response.success && response.data) {
         if (Array.isArray(response.data)) {
@@ -43,7 +43,7 @@ export const categoryService = {
           }));
         }
       }
-      
+
       // If we get here, return empty array
       console.warn('Unexpected categories response structure:', response);
       return [];
@@ -57,7 +57,7 @@ export const categoryService = {
   getCategoryById: async (id: number): Promise<Category | null> => {
     try {
       const response = await apiRequest(`/categories/${id}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const category = response.data;
         return {
@@ -80,7 +80,7 @@ export const categoryService = {
       method: 'POST',
       body: categoryData,
     }) as ApiResponse;
-    
+
     return response;
   },
 
@@ -90,7 +90,7 @@ export const categoryService = {
       method: 'PUT',
       body: categoryData,
     }) as ApiResponse;
-    
+
     return response;
   },
 
@@ -99,7 +99,7 @@ export const categoryService = {
     const response = await apiRequest(`/categories/${id}`, {
       method: 'DELETE',
     }) as ApiResponse;
-    
+
     return response;
   },
 
@@ -107,7 +107,7 @@ export const categoryService = {
   getCategoryHierarchy: async (): Promise<Category[]> => {
     try {
       const response = await apiRequest('/categories/hierarchy/tree') as ApiResponse;
-      
+
       if (response.success && response.data) {
         if (Array.isArray(response.data)) {
           return response.data;
@@ -132,7 +132,7 @@ export const publicCategoryService = {
       console.log('📊 RAW PUBLIC CATEGORIES API RESPONSE:', response);
 
       console.log('Public Categories API Response:', response);
-      
+
       // Handle different response structures
       if (response.success && response.data) {
         if (Array.isArray(response.data)) {
@@ -151,7 +151,7 @@ export const publicCategoryService = {
           }));
         }
       }
-      
+
       console.warn('Unexpected public categories response structure:', response);
       return [];
     } catch (error) {
@@ -164,7 +164,7 @@ export const publicCategoryService = {
   getCategoryById: async (id: number): Promise<Category | null> => {
     try {
       const response = await publicApiRequest(`/categories/public/categories/${id}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const category = response.data;
         return {
@@ -185,7 +185,7 @@ export const publicCategoryService = {
   getCategoryBySlug: async (slug: string): Promise<Category | null> => {
     try {
       const response = await publicApiRequest(`/categories/public/categories/slug/${slug}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const category = response.data;
         return {
@@ -206,7 +206,7 @@ export const publicCategoryService = {
   getCategoryHierarchy: async (): Promise<Category[]> => {
     try {
       const response = await publicApiRequest('/categories/public/categories/hierarchy/tree') as ApiResponse;
-      
+
       if (response.success && response.data) {
         if (Array.isArray(response.data)) {
           return response.data;

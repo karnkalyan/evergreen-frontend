@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ProductCard from '../components/products/ProductCard';
@@ -25,7 +25,7 @@ import MedicineRequestForm from '../components/home/MedicineRequestForm';
 import { publicProductService } from '../lib/productService';
 import { publicCategoryService } from '../lib/categoryService';
 import { publicBrandService } from '../lib/brandService';
-import { publicAboutUsService, AboutUsData } from '../lib/aboutUsService'; // Add this import
+import { publicAboutUsService, AboutUsData } from '../lib/aboutUsService';
 import { websiteSettingsService } from '../lib/websiteSettingsService';
 import {
     Shield,
@@ -40,6 +40,41 @@ import {
     Users,
     ThumbsUp
 } from 'lucide-react';
+
+// ========== SKELETON COMPONENTS ==========
+const SkeletonProductCard: React.FC = () => (
+    <div className="animate-pulse">
+        <div className="bg-gray-200 rounded-2xl h-48 w-full mb-3"></div>
+        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+    </div>
+);
+
+const SkeletonCategoryItem: React.FC = () => (
+    <div className="flex flex-col items-center text-center p-2 md:p-3">
+        <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 animate-pulse"></div>
+        <div className="h-3 bg-gray-200 rounded w-12 animate-pulse"></div>
+    </div>
+);
+
+const SkeletonBrandItem: React.FC = () => (
+    <div className="flex justify-center items-center p-4 bg-slate-50 rounded-xl">
+        <div className="h-10 w-24 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+);
+
+const SkeletonTestimonial: React.FC = () => (
+    <div className="bg-white rounded-xl shadow-soft-md p-6 animate-pulse">
+        <div className="flex items-center mb-4">
+            <div className="w-12 h-12 rounded-full bg-gray-200 mr-4"></div>
+            <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-32"></div>
+            </div>
+        </div>
+        <div className="h-16 bg-gray-200 rounded w-full"></div>
+    </div>
+);
 
 const SectionTitle: React.FC<{ title: string; link?: string; linkText?: string; }> = ({ title, link, linkText = 'View All' }) => (
     <div className="flex justify-between items-center mb-8">
@@ -69,7 +104,7 @@ const LUCIDE_ICONS: { [key: string]: React.ComponentType<any> } = {
     thumbsUp: ThumbsUp
 };
 
-const TrustBadgesSection: FC<{ section: HomepageSection }> = ({ section }) => {
+const TrustBadgesSection: React.FC<{ section: HomepageSection }> = ({ section }) => {
     const trustFeatures = section.config?.trustBadgeItems || [];
     if (!trustFeatures || trustFeatures.length === 0) return null;
 
@@ -105,22 +140,26 @@ const TrustBadgesSection: FC<{ section: HomepageSection }> = ({ section }) => {
     );
 };
 
-const BrandCarouselSection: FC<{ section: HomepageSection; brands: Brand[] }> = ({ section, brands }) => {
+const BrandCarouselSection: React.FC<{ section: HomepageSection; brands: Brand[]; isLoading: boolean }> = ({ section, brands, isLoading }) => {
     const brandIds = section.config?.brandIds || [];
-    if (!brandIds || brandIds.length === 0) return null;
+    if (!isLoading && (!brandIds || brandIds.length === 0)) return null;
     const brandsToShow = brands.filter(brand => brandIds.includes(brand.id));
-    if (brandsToShow.length === 0) return null;
+    if (!isLoading && brandsToShow.length === 0) return null;
 
     return (
         <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
                 <SectionTitle title={section.title} link="/manufacturers" />
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-                    {brandsToShow.map((brand, index) => (
-                        <div key={brand.id} className="flex justify-center items-center p-4 bg-slate-50 rounded-xl" data-aos="fade-up" data-aos-delay={index * 50}>
-                            <img src={brand.logo} alt={brand.name} className="h-10 object-contain" />
-                        </div>
-                    ))}
+                    {isLoading ? (
+                        Array.from({ length: 6 }).map((_, idx) => <SkeletonBrandItem key={idx} />)
+                    ) : (
+                        brandsToShow.map((brand, index) => (
+                            <div key={brand.id} className="flex justify-center items-center p-4 bg-slate-50 rounded-xl" data-aos="fade-up" data-aos-delay={index * 50}>
+                                <img src={brand.logo} alt={brand.name} className="h-10 object-contain" />
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </section>
@@ -145,16 +184,7 @@ const getColSpanClass = (span?: number) => {
     }
 }
 
-interface HomePageData {
-    products: Product[];
-    featuredProducts: Product[];
-    trendingProducts: Product[];
-    categories: Category[];
-    brands: Brand[];
-    loading: boolean;
-}
-
-// Add About Us Section Component
+// About Us Section Component
 const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boolean; isMobile: boolean }> = ({
     aboutUsData,
     loading,
@@ -164,17 +194,16 @@ const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boole
         return (
             <section className="py-20 bg-slate-50">
                 <div className="container mx-auto px-4">
-                    <div className="flex justify-center items-center py-12">
-                        <div className="animate-pulse text-slate-400">Loading About Us content...</div>
+                    <div className="animate-pulse">
+                        <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
+                        <div className="h-32 bg-gray-200 rounded w-full"></div>
                     </div>
                 </div>
             </section>
         );
     }
 
-    if (!aboutUsData) {
-        return null; // Don't show section if no data
-    }
+    if (!aboutUsData) return null;
 
     return (
         <section className="py-20 bg-slate-50">
@@ -203,19 +232,11 @@ const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boole
                         </Link>
                     </div>
                     <div className="lg:w-1/2" data-aos="fade-left">
-                        {aboutUsData.image ? (
-                            <img
-                                src={aboutUsData.image}
-                                alt={aboutUsData.title}
-                                className="rounded-2xl shadow-soft-lg w-full h-auto"
-                            />
-                        ) : (
-                            <img
-                                src="/images/company-profile.jpg"
-                                alt="Pharmacist assisting customer"
-                                className="rounded-2xl shadow-soft-lg w-full h-auto"
-                            />
-                        )}
+                        <img
+                            src={aboutUsData.image || '/images/company-profile.jpg'}
+                            alt={aboutUsData.title}
+                            className="rounded-2xl shadow-soft-lg w-full h-auto"
+                        />
                     </div>
                 </div>
             </div>
@@ -223,54 +244,71 @@ const AboutUsSection: React.FC<{ aboutUsData: AboutUsData | null; loading: boole
     );
 };
 
+// Main HomePage Component
 const HomePage: React.FC = () => {
     const isMobile = useMediaQuery('(max-width: 767px)');
     const { homepageSections, country } = useApp();
 
-    const [homeData, setHomeData] = useState<HomePageData>({
-        products: [],
-        featuredProducts: [],
-        trendingProducts: [],
-        categories: [],
-        brands: [],
-        loading: true
-    });
+    // State for different data types (separate for staged loading)
+    const [products, setProducts] = useState<Product[]>([]);
+    const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+    const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [brands, setBrands] = useState<Brand[]>([]);
 
-    // Add state for About Us data
+    // Loading flags for individual data types (used for skeletons)
+    const [isLoadingLightweight, setIsLoadingLightweight] = useState(true);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+
+    // About Us and SEO state
     const [aboutUsData, setAboutUsData] = useState<AboutUsData | null>(null);
     const [aboutUsLoading, setAboutUsLoading] = useState(true);
+    const [seoData, setSeoData] = useState<any>(null);
 
-    // Add state for SEO data
-    const [seoData, setSeoData] = useState(null);
-
+    // Step 1: Load lightweight data (categories, brands) immediately - no country dependency
     useEffect(() => {
-        const fetchHomeData = async () => {
+        const fetchLightweightData = async () => {
             try {
-                setHomeData(prev => ({ ...prev, loading: true }));
-
-                const [products, featuredProducts, trendingProducts, categories, brands] = await Promise.all([
-                    publicProductService.getProducts(country),
-                    publicProductService.getFeaturedProducts(country),
-                    publicProductService.getTrendingProducts(country),
+                const [categoriesData, brandsData] = await Promise.all([
                     publicCategoryService.getCategories(),
                     publicBrandService.getBrands()
                 ]);
-
-                setHomeData({
-                    products,
-                    featuredProducts,
-                    trendingProducts,
-                    categories,
-                    brands,
-                    loading: false
-                });
+                setCategories(categoriesData);
+                setBrands(brandsData);
             } catch (error) {
-                console.error('Error fetching home page data:', error);
-                setHomeData(prev => ({ ...prev, loading: false }));
+                console.error('Error fetching lightweight data:', error);
+            } finally {
+                setIsLoadingLightweight(false);
             }
         };
+        fetchLightweightData();
+    }, []); // Runs only once on mount
 
-        // Fetch About Us data
+    // Step 2: Load product data (depends on country) - refetch when country changes
+    const fetchProductsData = useCallback(async () => {
+        setIsLoadingProducts(true);
+        try {
+            const [productsData, featuredData, trendingData] = await Promise.all([
+                publicProductService.getProducts(country),
+                publicProductService.getFeaturedProducts(country),
+                publicProductService.getTrendingProducts(country)
+            ]);
+            setProducts(productsData);
+            setFeaturedProducts(featuredData);
+            setTrendingProducts(trendingData);
+        } catch (error) {
+            console.error('Error fetching products data:', error);
+        } finally {
+            setIsLoadingProducts(false);
+        }
+    }, [country]);
+
+    useEffect(() => {
+        fetchProductsData();
+    }, [fetchProductsData]); // Re-run when country changes
+
+    // About Us and SEO data (static, no country dependency)
+    useEffect(() => {
         const fetchAboutUsData = async () => {
             try {
                 setAboutUsLoading(true);
@@ -278,13 +316,11 @@ const HomePage: React.FC = () => {
                 setAboutUsData(data);
             } catch (error) {
                 console.error('Error fetching About Us data:', error);
-                setAboutUsData(null);
             } finally {
                 setAboutUsLoading(false);
             }
         };
 
-        // Fetch SEO data
         const fetchSeoData = async () => {
             try {
                 const data = await websiteSettingsService.getPageSeo('home');
@@ -294,13 +330,12 @@ const HomePage: React.FC = () => {
             }
         };
 
-        fetchHomeData();
         fetchAboutUsData();
         fetchSeoData();
     }, []);
 
     const getProductsByCategory = (slug: string, count: number = 10) => {
-        return homeData.products.filter(p => p.category?.slug === slug).slice(0, count);
+        return products.filter(p => p.category?.slug === slug).slice(0, count);
     };
 
     const renderSection = (section: HomepageSection, index: number, isNested: boolean = false) => {
@@ -309,19 +344,6 @@ const HomePage: React.FC = () => {
         const bgClass = isNested ? 'bg-transparent' : (index % 2 === 0 ? 'bg-white' : 'bg-slate-50');
         const paddingClass = isNested ? '' : 'py-16';
 
-        if (homeData.loading) {
-            return (
-                <section className={`${paddingClass} ${bgClass}`} key={section.id}>
-                    <div className="container mx-auto px-4">
-                        <SectionTitle title={section.title} />
-                        <div className="flex justify-center items-center py-12">
-                            <div className="animate-pulse text-slate-400">Loading {section.title}...</div>
-                        </div>
-                    </div>
-                </section>
-            );
-        }
-
         const getConfig = (key: string, defaultValue: any = null) => {
             return section.config?.[key] ?? defaultValue;
         };
@@ -329,65 +351,99 @@ const HomePage: React.FC = () => {
         switch (section.type) {
             case 'TRUST_BADGES':
                 return <TrustBadgesSection key={section.id} section={section} />;
+
             case 'BRAND_CAROUSEL':
-                return <BrandCarouselSection key={section.id} section={section} brands={homeData.brands} />;
-            case 'FEATURED_PRODUCTS':
-                const featuredProducts = homeData.featuredProducts.length > 0
-                    ? homeData.featuredProducts.slice(0, getConfig('productCount', 8))
-                    : homeData.products.filter(p => p.isFeatured).slice(0, getConfig('productCount', 8));
+                return (
+                    <BrandCarouselSection
+                        key={section.id}
+                        section={section}
+                        brands={brands}
+                        isLoading={isLoadingLightweight}
+                    />
+                );
+
+            case 'FEATURED_PRODUCTS': {
+                const featured = featuredProducts.length > 0
+                    ? featuredProducts.slice(0, getConfig('productCount', 8))
+                    : products.filter(p => p.isFeatured).slice(0, getConfig('productCount', 8));
 
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
                             <SectionTitle title={section.title} link="/category/all" />
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                {featuredProducts.map((product, index) => (
-                                    <ProductCard key={product.id} product={product} index={6 + index * 2} />
-                                ))}
+                                {isLoadingProducts ? (
+                                    Array.from({ length: 8 }).map((_, idx) => <SkeletonProductCard key={idx} />)
+                                ) : (
+                                    featured.map((product, idx) => (
+                                        <ProductCard key={product.id} product={product} index={6 + idx * 2} />
+                                    ))
+                                )}
                             </div>
                         </div>
                     </section>
                 );
-            case 'CATEGORY_GRID':
+            }
+
+            case 'CATEGORY_GRID': {
                 const start = (getConfig('categoryDisplayStart', 1)) - 1;
                 const count = getConfig('categoryDisplayCount', 18);
                 const end = start + count;
-                const categoriesToShow = homeData.categories.slice(start, end);
+                const categoriesToShow = categories.slice(start, end);
+
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className="container mx-auto px-4">
                             <SectionTitle title={section.title} />
                             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-9 gap-3 md:gap-4">
-                                {categoriesToShow.map((category, index) => (
-                                    <Link
-                                        key={category.id}
-                                        to={`/category/${category.slug}`}
-                                        className="group flex flex-col items-center text-center p-2 md:p-3 bg-white rounded-2xl shadow-soft-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
-                                        data-aos="fade-up"
-                                        data-aos-delay={index * 30}
-                                    >
-                                        <div
-                                            className="w-16 h-16 rounded-full flex items-center justify-center mb-2 transition-all duration-300 group-hover:scale-105"
-                                            style={{ backgroundColor: `${category.color}20` }}
+                                {isLoadingLightweight ? (
+                                    Array.from({ length: 18 }).map((_, idx) => <SkeletonCategoryItem key={idx} />)
+                                ) : (
+                                    categoriesToShow.map((category, idx) => (
+                                        <Link
+                                            key={category.id}
+                                            to={`/category/${category.slug}`}
+                                            className="group flex flex-col items-center text-center p-2 md:p-3 bg-white rounded-2xl shadow-soft-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+                                            data-aos="fade-up"
+                                            data-aos-delay={idx * 30}
                                         >
-                                            <div className="w-8 h-8" style={{ color: category.color }}>
-                                                {category.icon}
+                                            <div
+                                                className="w-16 h-16 rounded-full flex items-center justify-center mb-2 transition-all duration-300 group-hover:scale-105"
+                                                style={{ backgroundColor: `${category.color}20` }}
+                                            >
+                                                <div className="w-8 h-8" style={{ color: category.color }}>
+                                                    {category.icon}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <span className="text-xs font-semibold text-slate-700 leading-tight group-hover:text-primaryEnd transition-colors">{category.name}</span>
-                                    </Link>
-                                ))}
+                                            <span className="text-xs font-semibold text-slate-700 leading-tight group-hover:text-primaryEnd transition-colors">
+                                                {category.name}
+                                            </span>
+                                        </Link>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </section>
                 );
-            case 'CATEGORY_CAROUSEL':
+            }
+
+            case 'CATEGORY_CAROUSEL': {
                 const categorySlug = getConfig('categorySlug');
                 if (!categorySlug) return null;
-                const products = getProductsByCategory(categorySlug, getConfig('productCount', 8));
-                return <ProductCarousel key={section.id} title={section.title} products={products} categorySlug={categorySlug} bgClass={`${paddingClass} ${bgClass}`} />;
+                const categoryProducts = getProductsByCategory(categorySlug, getConfig('productCount', 8));
+                return (
+                    <ProductCarousel
+                        key={section.id}
+                        title={section.title}
+                        products={categoryProducts}
+                        isLoading={isLoadingProducts}
+                        categorySlug={categorySlug}
+                        bgClass={`${paddingClass} ${bgClass}`}
+                    />
+                );
+            }
 
-            case 'PROMO_GRID':
+            case 'PROMO_GRID': {
                 const promoGridItems = getConfig('promoGridItems', []);
                 if (!promoGridItems || promoGridItems.length === 0) return null;
                 return (
@@ -398,8 +454,9 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
+            }
 
-            case 'FEATURE_CARDS':
+            case 'FEATURE_CARDS': {
                 const featureCards = getConfig('featureCards', []);
                 if (!featureCards || featureCards.length === 0) return null;
                 return (
@@ -410,8 +467,9 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
+            }
 
-            case 'IMAGE_GALLERY':
+            case 'IMAGE_GALLERY': {
                 const galleryImages = getConfig('galleryImages', []);
                 const galleryLayout = getConfig('galleryLayout', 'grid');
                 if (!galleryImages || galleryImages.length === 0) return null;
@@ -423,6 +481,7 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
+            }
 
             case 'PROMO_BANNER':
                 return (
@@ -440,7 +499,7 @@ const HomePage: React.FC = () => {
                     </section>
                 );
 
-            case 'PROMO_CARDS':
+            case 'PROMO_CARDS': {
                 const promoCards = getConfig('promoCards', []);
                 if (!promoCards || promoCards.length === 0) return null;
                 return (
@@ -450,6 +509,7 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
+            }
 
             case 'NEWSLETTER_SIGNUP':
                 return (
@@ -460,7 +520,7 @@ const HomePage: React.FC = () => {
                     </section>
                 );
 
-            case 'FAQ':
+            case 'FAQ': {
                 const faqItems = getConfig('faqItems', []);
                 if (!faqItems || faqItems.length === 0) return null;
                 return (
@@ -471,8 +531,9 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
+            }
 
-            case 'VIDEO':
+            case 'VIDEO': {
                 const videoUrl = getConfig('videoUrl');
                 if (!videoUrl) return null;
                 return (
@@ -483,6 +544,7 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
+            }
 
             case 'CALL_TO_ACTION':
                 return (
@@ -499,7 +561,7 @@ const HomePage: React.FC = () => {
                     </section>
                 );
 
-            case 'GRID':
+            case 'GRID': {
                 const gridItems = getConfig('items', []);
                 const columnTemplate = getConfig('columnTemplate', [12]);
                 if (!gridItems || gridItems.length === 0) return null;
@@ -514,14 +576,15 @@ const HomePage: React.FC = () => {
                                         <div key={childSection.id} className={`min-w-0 ${getColSpanClass(span)}`}>
                                             {renderSection(childSection, childIndex, true)}
                                         </div>
-                                    )
+                                    );
                                 })}
                             </div>
                         </div>
                     </section>
                 );
+            }
 
-            case 'KEY_METRICS':
+            case 'KEY_METRICS': {
                 const keyMetrics = getConfig('keyMetrics', []);
                 if (!keyMetrics || keyMetrics.length === 0) return null;
                 return (
@@ -532,8 +595,9 @@ const HomePage: React.FC = () => {
                         </div>
                     </section>
                 );
+            }
 
-            case 'TESTIMONIALS':
+            case 'TESTIMONIALS': {
                 const testimonialItems = getConfig('testimonialItems', []);
                 if (!testimonialItems || testimonialItems.length === 0) return null;
                 if (isMobile && !isNested) return null;
@@ -542,30 +606,33 @@ const HomePage: React.FC = () => {
                         <div className={isNested ? '' : 'container mx-auto px-4'}>
                             <SectionTitle title={section.title} />
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {testimonialItems.map((testimonial, index) => (
-                                    <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
+                                {testimonialItems.map((testimonial, idx) => (
+                                    <TestimonialCard key={testimonial.id} testimonial={testimonial} index={idx} />
                                 ))}
                             </div>
                         </div>
                     </section>
                 );
+            }
+
             case 'BLOG':
                 return (
                     <section className={`${paddingClass} ${bgClass}`} key={section.id}>
                         <div className={isNested ? '' : 'container mx-auto px-4'}>
                             <SectionTitle title={section.title} link="/blog" />
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {MOCK_BLOG_POSTS.slice(0, getConfig('postCount', 3)).map((article, index) => (
-                                    <BlogCard key={article.id} article={article} index={index} />
+                                {MOCK_BLOG_POSTS.slice(0, getConfig('postCount', 3)).map((article, idx) => (
+                                    <BlogCard key={article.id} article={article} index={idx} />
                                 ))}
                             </div>
                         </div>
                     </section>
                 );
+
             default:
                 return null;
         }
-    }
+    };
 
     return (
         <>
@@ -586,19 +653,6 @@ const HomePage: React.FC = () => {
                 )}
             </Helmet>
             <div className="bg-slate-50">
-                {/* Company Name on Mobile */}
-                {/* {isMobile && (
-                 <div className="bg-white py-4">
-                    <div className="container mx-auto px-4">
-                        <Link to="/" className="font-poppins font-bold text-primaryStart flex flex-col leading-tight">
-                            <span className="text-3xl">Evergreen</span>
-                            <span className="text-xl">Medicine</span>
-                        </Link>
-                    </div>
-                </div>
-            )} */}
-
-                {/* Hero Section */}
                 {/* Mobile Hero View */}
                 <div className="md:hidden p-4" data-aos="fade-in">
                     <div className="relative rounded-2xl shadow-lg overflow-hidden text-white">
@@ -614,8 +668,6 @@ const HomePage: React.FC = () => {
                             </Link>
                         </div>
                     </div>
-
-                    {/* Medicine Request Form for Mobile */}
                     <div className="mt-6" data-aos="fade-up">
                         <MedicineRequestForm />
                     </div>
@@ -645,9 +697,10 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
+                {/* Render all homepage sections with progressive loading */}
                 {homepageSections.map((section, index) => renderSection(section, index))}
 
-                {/* Replace static Company Profile with dynamic About Us Section */}
+                {/* About Us Section (desktop only) */}
                 {!isMobile && (
                     <AboutUsSection
                         aboutUsData={aboutUsData}

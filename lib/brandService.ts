@@ -4,12 +4,12 @@ import { Brand, BrandFormData, ApiResponse } from '../types';
 // Helper function to get full image URL
 export const getImageUrl = (imagePath: string): string => {
   if (!imagePath) return '/placeholder-image.jpg';
-  
+
   if (imagePath.startsWith('http')) {
     return imagePath;
   }
-  
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+
+  const baseUrl = "/api";
   return `${baseUrl}${imagePath}`;
 };
 
@@ -23,20 +23,20 @@ export const brandService = {
 
       if (response.success && response.data) {
         let brandsArray: Brand[] = [];
-        
+
         if (response.data.brands && Array.isArray(response.data.brands)) {
           brandsArray = response.data.brands;
         } else if (Array.isArray(response.data)) {
           brandsArray = response.data;
         }
-        
+
         return brandsArray.map((brand: Brand) => ({
           ...brand,
           logo: brand.logo ? getImageUrl(brand.logo) : undefined,
           productCount: brand._count?.products || 0
         }));
       }
-      
+
       console.warn('Unexpected brands response structure:', response);
       return [];
     } catch (error) {
@@ -50,7 +50,7 @@ export const brandService = {
   getBrandById: async (id: number): Promise<Brand | null> => {
     try {
       const response = await apiRequest(`/brands/${id}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const brand = response.data;
         return {
@@ -70,7 +70,7 @@ export const brandService = {
   getBrandBySlug: async (slug: string): Promise<Brand | null> => {
     try {
       const response = await apiRequest(`/brands/slug/${slug}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const brand = response.data;
         return {
@@ -93,7 +93,7 @@ export const brandService = {
         method: 'POST',
         body: brandData,
       }) as ApiResponse;
-      
+
       return response;
     } catch (error) {
       console.error('Error creating brand:', error);
@@ -108,7 +108,7 @@ export const brandService = {
         method: 'PUT',
         body: brandData,
       }) as ApiResponse;
-      
+
       return response;
     } catch (error) {
       console.error('Error updating brand:', error);
@@ -122,7 +122,7 @@ export const brandService = {
       const response = await apiRequest(`/brands/${id}`, {
         method: 'DELETE',
       }) as ApiResponse;
-      
+
       return response;
     } catch (error) {
       console.error('Error deleting brand:', error);
@@ -134,16 +134,16 @@ export const brandService = {
   getPopularBrands: async (limit: number = 10): Promise<Brand[]> => {
     try {
       const response = await apiRequest(`/brands/popular/brands?limit=${limit}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         let brandsArray: Brand[] = [];
-        
+
         if (response.data.brands && Array.isArray(response.data.brands)) {
           brandsArray = response.data.brands;
         } else if (Array.isArray(response.data)) {
           brandsArray = response.data;
         }
-        
+
         return brandsArray.map((brand: Brand) => ({
           ...brand,
           logo: brand.logo ? getImageUrl(brand.logo) : undefined,
@@ -161,11 +161,11 @@ export const brandService = {
   searchBrands: async (query: string, page: number = 1, limit: number = 10): Promise<{ brands: Brand[]; pagination: any }> => {
     try {
       const response = await apiRequest(`/brands/search/brands?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const brandsArray = response.data.brands || [];
         const pagination = response.data.pagination || {};
-        
+
         return {
           brands: brandsArray.map((brand: Brand) => ({
             ...brand,
@@ -208,20 +208,20 @@ export const publicBrandService = {
 
       if (response.success && response.data) {
         let brandsArray: Brand[] = [];
-        
+
         if (response.data.brands && Array.isArray(response.data.brands)) {
           brandsArray = response.data.brands;
         } else if (Array.isArray(response.data)) {
           brandsArray = response.data;
         }
-        
+
         return brandsArray.map((brand: Brand) => ({
           ...brand,
           logo: brand.logo ? getImageUrl(brand.logo) : undefined,
           productCount: brand._count?.products || 0
         }));
       }
-      
+
       console.warn('Unexpected public brands response structure:', response);
       return [];
     } catch (error) {
@@ -234,7 +234,7 @@ export const publicBrandService = {
   getBrandById: async (id: number): Promise<Brand | null> => {
     try {
       const response = await publicApiRequest(`/brands/public/brands/${id}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const brand = response.data;
         return {
@@ -254,7 +254,7 @@ export const publicBrandService = {
   getBrandBySlug: async (slug: string): Promise<Brand | null> => {
     try {
       const response = await publicApiRequest(`/brands/public/brands/slug/${slug}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const brand = response.data;
         return {
@@ -274,16 +274,16 @@ export const publicBrandService = {
   getPopularBrands: async (limit: number = 10): Promise<Brand[]> => {
     try {
       const response = await publicApiRequest(`/brands/public/brands/popular/brands?limit=${limit}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         let brandsArray: Brand[] = [];
-        
+
         if (response.data.brands && Array.isArray(response.data.brands)) {
           brandsArray = response.data.brands;
         } else if (Array.isArray(response.data)) {
           brandsArray = response.data;
         }
-        
+
         return brandsArray.map((brand: Brand) => ({
           ...brand,
           logo: brand.logo ? getImageUrl(brand.logo) : undefined,
@@ -301,11 +301,11 @@ export const publicBrandService = {
   searchBrands: async (query: string, page: number = 1, limit: number = 10): Promise<{ brands: Brand[]; pagination: any }> => {
     try {
       const response = await publicApiRequest(`/brands/public/brands/search/brands?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`) as ApiResponse;
-      
+
       if (response.success && response.data) {
         const brandsArray = response.data.brands || [];
         const pagination = response.data.pagination || {};
-        
+
         return {
           brands: brandsArray.map((brand: Brand) => ({
             ...brand,

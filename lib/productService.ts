@@ -4,16 +4,16 @@ import { Product, Category, Brand, Country } from '../types';
 // Helper function to get full image URL
 export const getImageUrl = (imagePath: string): string => {
   if (!imagePath) return '/placeholder-image.jpg';
-  
+
   // If it's already a full URL, return as is
   if (imagePath.startsWith('http')) {
     return imagePath;
   }
-  
+
   // If it's a relative path, prepend the base URL
   // Use environment variable or default to the current origin for client-side
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
-  
+  const baseUrl = "/api";
+
   // Ensure the path starts with a slash
   const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
   return `${baseUrl}${normalizedPath}`;
@@ -22,7 +22,7 @@ export const getImageUrl = (imagePath: string): string => {
 // Helper function to process product images
 export const processProductImages = (product: any): Product => {
   if (!product) return product;
-  
+
   // Process images array if it exists
   const processedImages = product.images?.map((img: any) => ({
     ...img,
@@ -30,7 +30,7 @@ export const processProductImages = (product: any): Product => {
     // Ensure isPrimary is properly set
     isPrimary: img.isPrimary || (img.fieldName === 'primaryImage')
   })) || [];
-  
+
   return {
     ...product,
     images: processedImages
@@ -46,7 +46,7 @@ export const parseArrayField = (field: any): string[] => {
       const parsed = JSON.parse(field);
       return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
-      console.warn('Error parsing field as JSON, trying as string:', field);
+      // console.warn('Error parsing field as JSON, trying as string:', field);
       // If it's a string but not JSON, try to split by comma
       if (typeof field === 'string' && field.includes(',')) {
         return field.split(',').map(item => item.trim()).filter(item => item);
@@ -63,35 +63,35 @@ export const productService = {
   // FIXED: Use admin route instead of public route
   getProducts: async (): Promise<Product[]> => {
     try {
-      console.log('ðŸ”„ Fetching products from ADMIN API...');
-      
+      // console.log('ðŸ”„ Fetching products from ADMIN API...');
+
       // Use apiRequest (authenticated) instead of publicApiRequest
       const response = await apiRequest('/products');
-      console.log('ðŸ“¦ Admin products API response:', response);
-      
+      // console.log('ðŸ“¦ Admin products API response:', response);
+
       let products: any[] = [];
-      
+
       // Handle the admin API response structure: { success: true, data: { products: [...] } }
       if (response && response.success && response.data && Array.isArray(response.data.products)) {
         products = response.data.products;
-      } 
+      }
       // Handle direct array response (fallback)
       else if (Array.isArray(response)) {
         products = response;
-      } 
+      }
       // Handle other possible structures for backward compatibility
       else if (response && Array.isArray(response.products)) {
         products = response.products;
       } else if (response && Array.isArray(response.data)) {
         products = response.data;
       } else {
-        console.warn('âŒ Unexpected admin products response structure:', response);
+        // // console.warn('â Œ Unexpected admin products response structure:', response);
         return [];
       }
-      
+
       // Process image URLs for all products
       const processedProducts = products.map(processProductImages);
-      console.log('âœ… Processed admin products:', processedProducts.length);
+      // // console.log('âœ… Processed admin products:', processedProducts.length);
       return processedProducts;
     } catch (error) {
       console.error('âŒ Error fetching admin products:', error);
@@ -102,14 +102,14 @@ export const productService = {
 
   getProductsPaginated: async (page: number = 1, limit: number = 10, search?: string): Promise<any> => {
     try {
-      console.log(`ðŸ”„ Fetching paginated admin products: page=${page}, limit=${limit}, search=${search}`);
+      // // console.log(`ðŸ”„ Fetching paginated admin products: page=${page}, limit=${limit}, search=${search}`);
       const params = new URLSearchParams();
       params.append('page', String(page));
       params.append('limit', String(limit));
       if (search) params.append('search', search);
 
       const response = await apiRequest(`/products?${params.toString()}`);
-      console.log('ðŸ“¦ Paginated products response:', response);
+      // // console.log('ðŸ“¦ Paginated products response:', response);
 
       let products: any[] = [];
       let pagination: any = {
@@ -159,19 +159,19 @@ export const productService = {
 
   getProductBySlug: async (slug: string): Promise<Product | null> => {
     try {
-      console.log(`ðŸ”„ Fetching product by slug from ADMIN API: ${slug}`);
-      
+      // // console.log(`ðŸ”„ Fetching product by slug from ADMIN API: ${slug}`);
+
       // Use admin route without country parameter
       const productData = await apiRequest(`/products/slug/${slug}`);
-      console.log('ðŸ“¦ Admin product data received:', productData);
-      
+      // // console.log('ðŸ“¦ Admin product data received:', productData);
+
       if (!productData) {
-        console.warn('âŒ No product data found for slug:', slug);
+        // // console.warn('âŒ No product data found for slug:', slug);
         return null;
       }
-      
+
       const processedProduct = processProductImages(productData);
-      console.log('âœ… Processed admin product:', processedProduct);
+      // // console.log('âœ… Processed admin product:', processedProduct);
       return processedProduct;
     } catch (error) {
       console.error('âŒ Error fetching admin product by slug:', error);
@@ -182,9 +182,9 @@ export const productService = {
   // Get product by ID with processed images (admin route)
   getProductById: async (id: number): Promise<Product | null> => {
     try {
-      console.log(`ðŸ”„ Fetching product by ID from ADMIN API: ${id}`);
+      // // console.log(`ðŸ”„ Fetching product by ID from ADMIN API: ${id}`);
       const productData = await apiRequest(`/products/${id}`);
-      console.log('ðŸ“¦ Admin product by ID data:', productData);
+      // // console.log('ðŸ“¦ Admin product by ID data:', productData);
       return productData ? processProductImages(productData) : null;
     } catch (error) {
       console.error('âŒ Error fetching admin product by ID:', error);
@@ -196,15 +196,15 @@ export const productService = {
   // Create product (admin route)
   createProduct: async (productData: FormData): Promise<any> => {
     try {
-      console.log('ðŸ”„ Creating product via ADMIN API...');
+      // // console.log('ðŸ”„ Creating product via ADMIN API...');
       const result = await apiRequest('/products', {
         method: 'POST',
         body: productData,
       });
-      console.log('âœ… Product creation result:', result);
+      // // console.log('âœ… Product creation result:', result);
       return result;
     } catch (error) {
-      console.error('âŒ Error creating product:', error);
+      // console.error('âŒ Error creating product:', error);
       throw error;
     }
   },
@@ -212,12 +212,12 @@ export const productService = {
   // Update product (admin route)
   updateProduct: async (id: number, productData: FormData): Promise<any> => {
     try {
-      console.log(`ðŸ”„ Updating product via ADMIN API: ${id}`);
+      // // console.log(`ðŸ”„ Updating product via ADMIN API: ${id}`);
       const result = await apiRequest(`/products/${id}`, {
         method: 'PUT',
         body: productData,
       });
-      console.log('âœ… Product update result:', result);
+      // // console.log('âœ… Product update result:', result);
       return result;
     } catch (error) {
       console.error('âŒ Error updating product:', error);
@@ -228,25 +228,25 @@ export const productService = {
   // Delete product (admin route)
   deleteProduct: async (id: number): Promise<any> => {
     try {
-      console.log(`ðŸ”„ Deleting product via ADMIN API: ${id}`);
+      // console.log(`ðŸ”„ Deleting product via ADMIN API: ${id}`);
       const result = await apiRequest(`/products/${id}`, {
         method: 'DELETE',
       });
-      console.log('âœ… Product deletion result:', result);
+      // console.log('âœ… Product deletion result:', result);
       return result;
     } catch (error) {
       console.error('âŒ Error deleting product:', error);
       throw error;
     }
   },
-  
+
   // Get categories (admin route)
   getCategories: async (): Promise<Category[]> => {
     try {
-      // console.log('ðŸ”„ Fetching categories from ADMIN API...');
+      // // console.log('ðŸ”„ Fetching categories from ADMIN API...');
       const response = await apiRequest('/categories');
-      // console.log('ðŸ“¦ Admin categories response:', response);
-      
+      // // console.log('ðŸ“¦ Admin categories response:', response);
+
       if (response && response.success && response.data) {
         if (Array.isArray(response.data.categories)) {
           return response.data.categories;
@@ -254,7 +254,7 @@ export const productService = {
           return response.data;
         }
       }
-      
+
       if (Array.isArray(response)) {
         return response;
       } else if (response && Array.isArray(response.categories)) {
@@ -262,7 +262,7 @@ export const productService = {
       } else if (response && Array.isArray(response.data)) {
         return response.data;
       } else {
-        console.warn('âŒ Unexpected admin categories response structure:', response);
+        // console.warn('âŒ Unexpected admin categories response structure:', response);
         return [];
       }
     } catch (error) {
@@ -275,10 +275,10 @@ export const productService = {
   // Get brands (admin route)
   getBrands: async (): Promise<Brand[]> => {
     try {
-      // console.log('ðŸ”„ Fetching brands from ADMIN API...');
+      // // console.log('ðŸ”„ Fetching brands from ADMIN API...');
       const response = await apiRequest('/brands');
-      // console.log('ðŸ“¦ Admin brands response:', response);
-      
+      // // console.log('ðŸ“¦ Admin brands response:', response);
+
       // Handle the admin API response structure: { success: true, data: { brands: [...] } }
       if (response && response.success && response.data) {
         if (Array.isArray(response.data.brands)) {
@@ -287,7 +287,7 @@ export const productService = {
           return response.data;
         }
       }
-      
+
       // Fallback to old structure handling
       if (Array.isArray(response)) {
         return response;
@@ -296,7 +296,7 @@ export const productService = {
       } else if (response && Array.isArray(response.data)) {
         return response.data;
       } else {
-        console.warn('âŒ Unexpected admin brands response structure:', response);
+        // console.warn('âŒ Unexpected admin brands response structure:', response);
         return [];
       }
     } catch (error) {
@@ -323,10 +323,10 @@ const buildPublicProductUrl = (endpoint: string, country?: Country | string) => 
 export const publicProductService = {
   getProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      // console.log('Fetching products from public API...', country);
+      // // console.log('Fetching products from public API...', country);
       const response = await publicApiRequest(buildPublicProductUrl('/products/public/products', country));
-      // console.log('Products API response:', response);
-      
+      // // console.log('Products API response:', response);
+
       let products: any[] = [];
       if (Array.isArray(response)) {
         products = response;
@@ -337,13 +337,13 @@ export const publicProductService = {
       } else if (response && response.success && Array.isArray(response.data?.products)) {
         products = response.data.products;
       } else {
-        console.warn('Unexpected products response structure:', response);
+        // console.warn('Unexpected products response structure:', response);
         return [];
       }
-      
+
       // Process image URLs for all products
       const processedProducts = products.map(processProductImages);
-      // console.log('Processed products:', processedProducts);
+      // // console.log('Processed products:', processedProducts);
       return processedProducts;
     } catch (error) {
       handleApiError(error, 'Failed to fetch products');
@@ -352,10 +352,10 @@ export const publicProductService = {
   },
   getFeaturedProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      // console.log('Fetching featured products from public API...', country);
+      // // console.log('Fetching featured products from public API...', country);
       const response = await publicApiRequest(buildPublicProductUrl('/products/public/products/featured', country));
-      // console.log('Featured products API response:', response);
-      
+      // // console.log('Featured products API response:', response);
+
       let products: any[] = [];
       if (Array.isArray(response)) {
         products = response;
@@ -366,10 +366,10 @@ export const publicProductService = {
       } else if (response && response.success && Array.isArray(response.data?.products)) {
         products = response.data.products;
       } else {
-        console.warn('Unexpected featured products response structure:', response);
+        // console.warn('Unexpected featured products response structure:', response);
         return [];
       }
-      
+
       return products.map(processProductImages);
     } catch (error) {
       handleApiError(error, 'Failed to fetch featured products');
@@ -378,10 +378,10 @@ export const publicProductService = {
   },
   getTrendingProducts: async (country?: Country | string): Promise<Product[]> => {
     try {
-      // console.log('Fetching trending products from public API...', country);
+      // // console.log('Fetching trending products from public API...', country);
       const response = await publicApiRequest(buildPublicProductUrl('/products/public/products/trending', country));
-      // console.log('Trending products API response:', response);
-      
+      // // console.log('Trending products API response:', response);
+
       let products: any[] = [];
       if (Array.isArray(response)) {
         products = response;
@@ -392,10 +392,10 @@ export const publicProductService = {
       } else if (response && response.success && Array.isArray(response.data?.products)) {
         products = response.data.products;
       } else {
-        console.warn('Unexpected trending products response structure:', response);
+        // console.warn('Unexpected trending products response structure:', response);
         return [];
       }
-      
+
       return products.map(processProductImages);
     } catch (error) {
       handleApiError(error, 'Failed to fetch trending products');
@@ -404,19 +404,19 @@ export const publicProductService = {
   },
   getProductBySlug: async (slug: string): Promise<Product | null> => {
     try {
-      // console.log(`Fetching product by slug from public API: ${slug}`);
+      // // console.log(`Fetching product by slug from public API: ${slug}`);
       const productData = await publicApiRequest(`/products/public/products/slug/${slug}`);
-      // console.log('Product data received:', productData);
-      
+      // // console.log('Product data received:', productData);
+
       if (!productData) {
-        console.warn('No product data found for slug:', slug);
+        // console.warn('No product data found for slug:', slug);
         return null;
       }
-      
+
       // Handle different response structures
       const product = productData.data || productData.product || productData;
       const processedProduct = processProductImages(product);
-      // console.log('Processed product:', processedProduct);
+      // // console.log('Processed product:', processedProduct);
       return processedProduct;
     } catch (error) {
       handleApiError(error, 'Failed to fetch product');
@@ -437,15 +437,15 @@ export const publicProductService = {
     try {
       const params = new URLSearchParams();
       params.append('search', query);
-      
+
       if (filters) {
         Object.keys(filters).forEach(key => {
           if (filters[key]) params.append(key, filters[key]);
         });
       }
-      
+
       const response = await publicApiRequest(`/products/public/products/search/products?${params}`);
-      
+
       let products: any[] = [];
       if (Array.isArray(response)) {
         products = response;
@@ -456,10 +456,10 @@ export const publicProductService = {
       } else if (response && response.success && Array.isArray(response.data?.products)) {
         products = response.data.products;
       } else {
-        console.warn('Unexpected search products response structure:', response);
+        // console.warn('Unexpected search products response structure:', response);
         return [];
       }
-      
+
       return products.map(processProductImages);
     } catch (error) {
       handleApiError(error, 'Failed to search products');
@@ -467,7 +467,7 @@ export const publicProductService = {
     }
   },
 
-   getRecommendedProducts: async (productId: number): Promise<Product[]> => {
+  getRecommendedProducts: async (productId: number): Promise<Product[]> => {
     try {
       const response = await api.get(`/products/${productId}/recommended`);
       return response.data;
@@ -494,7 +494,7 @@ export const publicCategoryService = {
   getCategories: async (): Promise<Category[]> => {
     try {
       const response = await publicApiRequest('/public/categories');
-      
+
       // Handle different response structures
       if (response && response.success && response.data) {
         if (Array.isArray(response.data.categories)) {
@@ -503,7 +503,7 @@ export const publicCategoryService = {
           return response.data;
         }
       }
-      
+
       if (Array.isArray(response)) {
         return response;
       } else if (response && Array.isArray(response.categories)) {
@@ -511,7 +511,7 @@ export const publicCategoryService = {
       } else if (response && Array.isArray(response.data)) {
         return response.data;
       } else {
-        console.warn('Unexpected categories response structure:', response);
+        // console.warn('Unexpected categories response structure:', response);
         return [];
       }
     } catch (error) {
@@ -538,8 +538,8 @@ export const publicBrandService = {
   getBrands: async (): Promise<Brand[]> => {
     try {
       const response = await publicApiRequest('/public/brands');
-      console.log('Brands API response:', response);
-      
+      // console.log('Brands API response:', response);
+
       // Handle the new API response structure: { success: true, data: { brands: [...] } }
       if (response && response.success && response.data) {
         if (Array.isArray(response.data.brands)) {
@@ -548,7 +548,7 @@ export const publicBrandService = {
           return response.data;
         }
       }
-      
+
       // Fallback to old structure handling
       if (Array.isArray(response)) {
         return response;
@@ -557,7 +557,7 @@ export const publicBrandService = {
       } else if (response && Array.isArray(response.data)) {
         return response.data;
       } else {
-        console.warn('Unexpected brands response structure:', response);
+        // console.warn('Unexpected brands response structure:', response);
         return [];
       }
     } catch (error) {
