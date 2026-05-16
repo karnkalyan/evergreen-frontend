@@ -170,7 +170,8 @@ export const productService = {
         return null;
       }
 
-      const processedProduct = processProductImages(productData);
+      const product = productData.data?.product || productData.data || productData.product || productData;
+      const processedProduct = processProductImages(product);
       // // console.log('âœ… Processed admin product:', processedProduct);
       return processedProduct;
     } catch (error) {

@@ -24,11 +24,17 @@ const renderIcon = (icon, className = '', fallback = '') => {
 // CSS for Quill Editor
 const quillStyles = `
 .quill-editor-custom .ql-toolbar {
+  position: sticky;
+  top: 72px;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
   border-top: 1px solid #ccc;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
   border-bottom: none;
   border-radius: 8px 8px 0 0;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
 .quill-editor-custom .ql-container {
@@ -57,6 +63,7 @@ const QuillEditor = ({ value, onChange, placeholder = "Write your blog content h
   const [editorLoaded, setEditorLoaded] = useState(false);
   const ReactQuillRef = useRef(null);
   const quillRef = useRef(null);
+  const lastSyncedValue = useRef('');
 
   useEffect(() => {
     // Add styles to head
@@ -160,16 +167,20 @@ const QuillEditor = ({ value, onChange, placeholder = "Write your blog content h
     }
   }), [imageHandler]);
 
-  const formats = [
-    'header', 'font', 'size',
-    'bold', 'italic', 'underline', 'strike',
-    'color', 'background',
-    'script',
-    'list', 'bullet', 'indent',
-    'align',
-    'blockquote', 'code-block',
-    'link', 'image', 'video'
-  ];
+  useEffect(() => {
+    const quill = quillRef.current?.getEditor?.();
+    const nextValue = value || '';
+
+    if (!editorLoaded || !quill || !nextValue || nextValue === lastSyncedValue.current) return;
+
+    const currentHtml = quill.root.innerHTML;
+    if (currentHtml === '<p><br></p>') {
+      quill.clipboard.dangerouslyPasteHTML(nextValue, 'silent');
+    }
+
+    lastSyncedValue.current = nextValue;
+  }, [editorLoaded, value]);
+
 
   if (!editorLoaded) {
     return (
@@ -188,7 +199,6 @@ const QuillEditor = ({ value, onChange, placeholder = "Write your blog content h
         value={value}
         onChange={onChange}
         modules={modules}
-        formats={formats}
         placeholder={placeholder}
         theme="snow"
         style={{ minHeight: '400px' }}
@@ -739,6 +749,7 @@ const BlogEditor = ({ post, onSave, onCancel, onDelete }) => {
             Content *
           </label>
           <QuillEditor
+            key={post?.id ? `blog-edit-${post.id}` : 'blog-new'}
             value={formData.content}
             onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
           />
@@ -1062,9 +1073,23 @@ const BlogManagementPage = () => {
         setCurrentView('edit');
     };
 
-    const handleEdit = (post) => {
-        setEditingPost(post);
-        setCurrentView('edit');
+    const handleEdit = async (post) => {
+        setIsLoading(true);
+        try {
+            if ((!post.content || post.content === '') && post.id) {
+                const response = await blogService.getBlogPostById(post.id);
+                const fullPost = response?.data || response || post;
+                setEditingPost(fullPost);
+            } else {
+                setEditingPost(post);
+            }
+            setCurrentView('edit');
+        } catch (error) {
+            console.error('Failed to load full blog post for editing:', error);
+            toast.error('Failed to load blog post content for edit');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleView = (post) => {

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -16,6 +16,7 @@ const CustomReactQuill: React.FC<CustomReactQuillProps> = ({
   placeholder 
 }) => {
   const quillRef = useRef<ReactQuill>(null);
+  const lastSyncedValue = useRef('');
 
   const defaultModules = {
     toolbar: [
@@ -30,12 +31,26 @@ const CustomReactQuill: React.FC<CustomReactQuillProps> = ({
     ],
   };
 
+  useEffect(() => {
+    const editor = quillRef.current?.getEditor();
+    const nextValue = value ?? '';
+
+    if (!editor || nextValue === lastSyncedValue.current) return;
+
+    const currentHtml = editor.root.innerHTML;
+    if (nextValue && currentHtml === '<p><br></p>') {
+      editor.clipboard.dangerouslyPasteHTML(nextValue, 'silent');
+    }
+
+    lastSyncedValue.current = nextValue;
+  }, [value]);
+
   return (
     <div className="react-quill-wrapper">
       <ReactQuill
         ref={quillRef}
         theme="snow"
-        value={value}
+        value={value ?? ''}
         onChange={onChange}
         modules={modules || defaultModules}
         placeholder={placeholder}

@@ -48,7 +48,7 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = "/api";
+const API_BASE_URL = "http://localhost:4000"; // Update with your actual API base URL
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);

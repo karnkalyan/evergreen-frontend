@@ -327,12 +327,14 @@ const ProductEditPage: React.FC = () => {
         setFetchError('Failed to load initial data');
         toast.error('Failed to load initial data');
       } finally {
-        setInitialLoading(false);
+        if (!isEditing) {
+          setInitialLoading(false);
+        }
       }
     };
 
     fetchInitialData();
-  }, []);
+  }, [isEditing]);
 
   // Fetch product data when editing
   useEffect(() => {
@@ -355,46 +357,48 @@ const ProductEditPage: React.FC = () => {
         
         console.log('Product data received:', productData);
         
+        const product = productData?.data?.product || productData?.data || productData?.product || productData;
+
         // Transform API response to match frontend types
         setProduct({
-          id: productData.id,
-          sku: productData.sku,
-          name: productData.name,
-          slug: productData.slug,
-          description: productData.description,
-          shortDescription: productData.shortDescription,
-          composition: productData.composition,
-          price: productData.price,
-          mrp: productData.mrp,
-          discount_percent: productData.discount_percent,
-          prescription_required: productData.prescription_required,
-          isFeatured: productData.isFeatured,
-          isTrending: productData.isTrending,
-          isActive: productData.isActive,
-          country: productData.country || 'Global', // Set country from API
-          brand_id: productData.brand?.id || productData.brand_id,
-          category_id: productData.category?.id || productData.category_id,
-          stock: productData.stock || 0,
-          min_order_quantity: productData.min_order_quantity || 1,
-          max_order_quantity: productData.max_order_quantity || 10,
-          weight: productData.weight || 0,
-          dimensions: productData.dimensions || '',
-          brand: productData.brand,
-          category: productData.category,
-          images: productData.images || [],
-          rating: productData.rating,
-          reviews: productData.reviews,
-          views: productData.views
+          id: product.id,
+          sku: product.sku,
+          name: product.name,
+          slug: product.slug,
+          description: product.description,
+          shortDescription: product.shortDescription,
+          composition: product.composition,
+          price: product.price,
+          mrp: product.mrp,
+          discount_percent: product.discount_percent,
+          prescription_required: product.prescription_required,
+          isFeatured: product.isFeatured,
+          isTrending: product.isTrending,
+          isActive: product.isActive,
+          country: product.country || 'Global', // Set country from API
+          brand_id: product.brand?.id || product.brand_id,
+          category_id: product.category?.id || product.category_id,
+          stock: product.stock || 0,
+          min_order_quantity: product.min_order_quantity || 1,
+          max_order_quantity: product.max_order_quantity || 10,
+          weight: product.weight || 0,
+          dimensions: product.dimensions || '',
+          brand: product.brand,
+          category: product.category,
+          images: product.images || [],
+          rating: product.rating,
+          reviews: product.reviews,
+          views: product.views
         });
         
-        setDescription(productData.description || '');
+        setDescription(product.description || '');
         
         // Parse the array fields from the API response
-        setStrengths(productService.parseArrayField(productData.strengths));
-        setForms(productService.parseArrayField(productData.forms));
-        setTags(productService.parseArrayField(productData.tags));
-        setSymptoms(productService.parseArrayField(productData.symptoms));
-        setVariants(Array.isArray(productData.variants) ? productData.variants : []);
+        setStrengths(productService.parseArrayField(product.strengths));
+        setForms(productService.parseArrayField(product.forms));
+        setTags(productService.parseArrayField(product.tags));
+        setSymptoms(productService.parseArrayField(product.symptoms));
+        setVariants(Array.isArray(product.variants) ? product.variants : []);
         
         // console.log('Product images:', productData.images);
         // console.log('Parsed strengths:', productService.parseArrayField(productData.strengths));
@@ -636,6 +640,7 @@ const ProductEditPage: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                 <CustomReactQuill
+                  key={product.id ? `product-${product.id}` : 'product-new'}
                   value={description}
                   onChange={setDescription}
                   placeholder="Enter product description..."

@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 
-const BASE_URL = '/api';
+const BASE_URL = 'http://localhost:4000';
 
 
 function isClient() {

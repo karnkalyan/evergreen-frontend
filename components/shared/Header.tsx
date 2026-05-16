@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../hooks/useCart';
 import { useApp } from '../../hooks/useApp';
 import { 
@@ -177,116 +177,23 @@ const Header: React.FC = () => {
     const [websiteSettings, setWebsiteSettings] = useState<WebsiteSettings | null>(null);
     const [isLoadingSettings, setIsLoadingSettings] = useState(true);
     const [isDetectingCountry, setIsDetectingCountry] = useState(false);
+    const location = useLocation();
+    const isHomepage = location.pathname === '/';
     const navigate = useNavigate();
     
     // Add refs to track click events
     const searchInputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
 
-    // Enhanced country detection that uses browser geolocation API
+    // Simplify country handling: always use Global by default on client
     useEffect(() => {
-        const detectUserCountry = async () => {
-            try {
-                setIsDetectingCountry(true);
-                // console.log('🔄 Starting enhanced country detection...');
-
-                let detectedCountryCode = 'Global';
-
-                // Method 1: Try HTML5 Geolocation API first (most accurate)
-                const geolocationCountry = await getCountryFromGeolocation();
-                if (geolocationCountry) {
-                    detectedCountryCode = geolocationCountry;
-                    // console.log('📍 Country detected from geolocation:', detectedCountryCode);
-                } else {
-                    // Method 2: Try backend IP detection
-                    try {
-                        const backendCountry = await countryService.detectCountry();
-                        // console.log('🌐 Backend detection result:', backendCountry);
-                        
-                        if (backendCountry && backendCountry.code && backendCountry.code !== 'GL') {
-                            detectedCountryCode = backendCountry.code;
-                            // console.log('📍 Country detected from backend IP:', detectedCountryCode);
-                        }
-                    } catch (backendError) {
-                        // console.log('⚠️ Backend detection failed, trying browser methods...');
-                    }
-
-                    // Method 3: Browser language and timezone fallback
-                    if (detectedCountryCode === 'Global') {
-                        const browserCountry = getCountryFromBrowser();
-                        if (browserCountry) {
-                            detectedCountryCode = browserCountry;
-                            // console.log('📍 Country detected from browser:', detectedCountryCode);
-                        }
-                    }
-                }
-
-                // Verify the detected country exists and is active
-                if (detectedCountryCode !== 'Global') {
-                    try {
-                        const countryDetails = await countryService.getCountryByCode(detectedCountryCode);
-                        if (countryDetails && countryDetails.isActive) {
-                            // console.log('✅ Setting detected country:', detectedCountryCode);
-                            setCountry(detectedCountryCode as any);
-                        } else {
-                            // console.log('⚠️ Detected country not active, falling back to Global');
-                            setCountry('Global');
-                        }
-                    } catch (error) {
-                        // console.log('⚠️ Detected country not found, falling back to Global');
-                        setCountry('Global');
-                    }
-                } else {
-                    //  console.log('🌍 No country detected, using Global');
-                    setCountry('Global');
-                }
-
-            } catch (error) {
-                console.error('❌ Error in country detection:', error);
-                setCountry('Global');
-            } finally {
-                setIsDetectingCountry(false);
-            }
-        };
-
-        detectUserCountry();
+        setIsDetectingCountry(false);
+        setCountry('Global');
     }, [setCountry]);
 
     // HTML5 Geolocation API to get precise location
-    const getCountryFromGeolocation = (): Promise<string | null> => {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                console.log('📍 Geolocation not supported');
-                resolve(null);
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    try {
-                        const { latitude, longitude } = position.coords;
-                        console.log('📍 Geolocation coordinates:', latitude, longitude);
-                        
-                        // Use a geocoding service to get country from coordinates
-                        const country = await reverseGeocode(latitude, longitude);
-                        resolve(country);
-                    } catch (error) {
-                        console.error('📍 Geolocation reverse geocoding failed:', error);
-                        resolve(null);
-                    }
-                },
-                (error) => {
-                    console.log('📍 Geolocation permission denied or failed:', error.message);
-                    resolve(null);
-                },
-                {
-                    enableHighAccuracy: false,
-                    timeout: 5000,
-                    maximumAge: 300000 // 5 minutes cache
-                }
-            );
-        });
-    };
+    // Geolocation disabled: using default Global country to avoid blocking UI
+    const getCountryFromGeolocation = (): Promise<string | null> => Promise.resolve(null);
 
     // Simple reverse geocoding using a free service
     const reverseGeocode = async (lat: number, lng: number): Promise<string | null> => {
@@ -741,8 +648,8 @@ const Header: React.FC = () => {
                         {secondLine && <span className="text-xl">{secondLine}</span>}
                     </Link>
 
-                    {/* Search Bar - Hidden on mobile */}
-                    <div className="flex-1 flex justify-center px-8 hidden lg:flex">
+{/* Search Bar - Shown on desktop only */}
+                    <div className="hidden lg:flex-1 lg:flex lg:justify-center lg:px-8"> 
                         <form onSubmit={handleSearch} className="relative w-full max-w-xl">
                             <div className="relative">
                                 <input 
@@ -806,6 +713,43 @@ const Header: React.FC = () => {
                 </nav>
             </div>
 
+            {isHomepage && (
+                <div className="lg:hidden border-t border-slate-200 bg-white">
+                    <div className="container mx-auto px-4 py-4">
+                        <form onSubmit={handleSearch} className="relative w-full">
+                            <div className="relative">
+                                <input 
+                                    ref={searchInputRef}
+                                    type="text" 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onFocus={handleSearchInputFocus}
+                                    placeholder="Search for medicines and wellness products..."
+                                    className="w-full pl-12 pr-4 py-3 bg-slate-100 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-primaryStart/50 focus:border-primaryStart"
+                                    style={{
+                                        background: getBackgroundStyle(headerStyles?.searchBar?.background),
+                                        color: headerStyles?.searchBar?.textColor || '#1f2937'
+                                    }}
+                                />
+                                <button 
+                                    type="submit" 
+                                    aria-label="Search" 
+                                    className="absolute left-4 top-1/2 -translate-y-1/2"
+                                    style={{ color: headerStyles?.searchBar?.textColor || '#6b7280' }}
+                                >
+                                    <Search className="h-5 w-5" />
+                                </button>
+                                {isSearching && (
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    </div>
+                                )}
+                            </div>
+                            {renderSearchSuggestions()}
+                        </form>
+                    </div>
+                </div>
+            )}
             {/* Bottom Navigation Links - Hidden on mobile */}
             <div 
                 className="border-t border-slate-200 hidden md:block"

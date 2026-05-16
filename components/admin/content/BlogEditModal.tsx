@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ReactQuill from 'react-quill';
+import CustomReactQuill from '../../shared/CustomReactQuill';
 import { BlogPost } from '../../../types';
 import Button from '../../shared/Button';
 import SearchableSelect from '../../shared/SearchableSelect';
@@ -25,6 +25,14 @@ const BlogEditModal: React.FC<{ post?: BlogPost | null, onClose: () => void, onS
     const [status, setStatus] = useState<'Published' | 'Draft'>(post?.status || 'Draft');
     const [files, setFiles] = useState<File[]>([]);
     const [content, setContent] = useState(post?.content || '');
+
+    useEffect(() => {
+        setTitle(post?.title || '');
+        setSlug(post?.slug || '');
+        setAuthor(post?.author || 'Admin');
+        setStatus(post?.status || 'Draft');
+        setContent(post?.content || '');
+    }, [post]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,11 +95,12 @@ const BlogEditModal: React.FC<{ post?: BlogPost | null, onClose: () => void, onS
                         </div>
                         <div>
                              <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
-                             <ReactQuill
-                                theme="snow"
+                             <CustomReactQuill
+                                key={post?.id ? `blog-${post.id}` : 'blog-new'}
                                 value={content}
                                 onChange={setContent}
                                 modules={quillModules}
+                                placeholder="Write the blog content here..."
                             />
                         </div>
                     </div>
